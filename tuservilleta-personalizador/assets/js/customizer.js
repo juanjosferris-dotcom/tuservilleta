@@ -1,0 +1,377 @@
+(function () {
+	const data = window.TuservilletaData || {};
+	if (!data || !data.catalog) return;
+
+	const steps = [
+		{ key: 'size', label: 'Tamaño' },
+		{ key: 'type', label: 'Calidad' },
+		{ key: 'color', label: 'Color' },
+		{ key: 'quantity', label: 'Cantidad' },
+		{ key: 'printing', label: 'Impresión' },
+		{ key: 'image', label: 'Imagen' },
+	];
+
+	const catalog = data.catalog || [];
+	const settings = data.settings || {};
+
+	const state = {
+		currentStep: 0,
+		selections: {
+			size: null,
+			type: null,
+			color: null,
+			quantity: null,
+			printing: null,
+			image: null,
+		},
+		price: null,
+	};
+
+	const stepsContainer = document.getElementById('tuservilleta-steps');
+	const progressContainer = document.getElementById('tuservilleta-progress');
+	const selectionList = document.getElementById('tuservilleta-selection');
+	const priceNode = document.getElementById('tuservilleta-price');
+	const imageInput = document.getElementById('tuservilleta-image');
+	const sendBtn = document.getElementById('tuservilleta-send');
+	const payBtn = document.getElementById('tuservilleta-pay');
+	const messageNode = document.getElementById('tuservilleta-message');
+	const paypalForm = document.getElementById('tuservilleta-paypal-form');
+	const amountField = document.getElementById('tuservilleta-amount');
+	const itemNameField = document.getElementById('tuservilleta-item-name');
+
+	const currency = settings.currency || 'EUR';
+	const formatter = new Intl.NumberFormat('es-ES', { style: 'currency', currency });
+
+	function setAccent() {
+		if (settings.accent_color) {
+			document.documentElement.style.setProperty('--tuservilleta-accent', settings.accent_color);
+		}
+	}
+
+	function renderEmptyCatalog() {
+		if (!stepsContainer) return;
+		stepsContainer.innerHTML = `<div class="tuservilleta-card">${data.strings?.emptyCatalog || 'Sube un catálogo para comenzar.'}</div>`;
+		sendBtn?.setAttribute('disabled', 'disabled');
+		payBtn?.setAttribute('disabled', 'disabled');
+	}
+
+	function filterCatalog(upToIndex) {
+		let filtered = catalog.slice();
+		steps.slice(0, upToIndex).forEach((step) => {
+			const val = state.selections[step.key];
+			if (val !== null && val !== undefined && val !== '') {
+				filtered = filtered.filter((row) => String(row[step.key]) === String(val));
+			}
+		});
+		return filtered;
+	}
+
+	function optionsForStep(stepIndex) {
+		const step = steps[stepIndex];
+		const filtered = filterCatalog(stepIndex);
+		const values = new Set();
+		filtered.forEach((row) => {
+			if (row[step.key] !== undefined && row[step.key] !== null && row[step.key] !== '') {
+				values.add(row[step.key]);
+			}
+		});
+		return Array.from(values);
+	}
+
+	function renderProgress() {
+		if (!progressContainer) return;
+		progressContainer.innerHTML = '';
+
+		steps.forEach((step, index) => {
+			const node = document.createElement('div');
+			node.className = 'step';
+			if (index === state.currentStep) node.classList.add('active');
+			if (index < state.currentStep) node.classList.add('completed');
+
+			node.innerHTML = `<div class="badge">${index + 1}</div><div>${step.label}</div>`;
+			node.addEventListener('click', () => {
+				if (index <= state.currentStep) {
+					state.currentStep = index;
+					render();
+				}
+			});
+			progressContainer.appendChild(node);
+		});
+	}
+
+	function renderStep() {
+		if (!stepsContainer) return;
+		const step = steps[state.currentStep];
+
+		if (step.key === 'image') {
+			stepsContainer.innerHTML = `
+				<div class="tuservilleta-grid">
+					<div class="tuservilleta-card" data-image="upload">
+						<div class="title">Subir imagen ahora</div>
+						<p class="caption">Adjunta tu logo o diseño para validarlo junto al pedido.</p>
+					</div>
+					<div class="tuservilleta-card" data-image="later">
+						<div class="title">La enviaré más tarde</div>
+						<p class="caption">Podrás compartirla por email tras confirmar el pedido.</p>
+					</div>
+				</div>
+			`;
+			stepsContainer.querySelectorAll('.tuservilleta-card').forEach((card) => {
+				card.addEventListener('click', () => {
+					const mode = card.getAttribute('data-image');
+					if (mode === 'upload') {
+						state.selections.image = imageInput?.files?.[0]?.name || 'Adjuntaré ahora';
+						imageInput?.click();
+					} else {
+						state.selections.image = 'Enviaré más tarde';
+					}
+					updateSummary();
+					state.currentStep = steps.length - 1;
+					render();
+				});
+			});
+			return;
+		}
+
+		const options = optionsForStep(state.currentStep);
+		stepsContainer.innerHTML = `<div class="tuservilleta-grid"></div>`;
+		const grid = stepsContainer.querySelector('.tuservilleta-grid');
+
+		if (!options.length) {
+			grid.innerHTML = `<div class="tuservilleta-card">${data.strings?.priceNotFound || 'No hay opciones disponibles.'}</div>`;
+			return;
+		}
+
+		options.forEach((option) => {
+			const card = document.createElement('div');
+			card.className = 'tuservilleta-card';
+			if (String(state.selections[step.key]) === String(option)) card.classList.add('selected');
+			card.innerHTML = `<div class="title">${option}</div><p class="caption">Elegir ${step.label.toLowerCase()}</p>`;
+			card.addEventListener('click', () => {
+				state.selections[step.key] = option;
+				if (state.currentStep < steps.length - 1) {
+					state.currentStep += 1;
+				}
+				render();
+				updateSummary();
+			});
+			grid.appendChild(card);
+		});
+	}
+
+	function computePrice() {
+		const { size, type, color, quantity, printing } = state.selections;
+		if (!size || !type || !color || !quantity || !printing) {
+			state.price = null;
+			return;
+		}
+		const match = catalog.find(
+			(row) =>
+				String(row.size) === String(size) &&
+				String(row.type) === String(type) &&
+				String(row.color) === String(color) &&
+				String(row.quantity) === String(quantity) &&
+				String(row.printing) === String(printing)
+		);
+		state.price = match ? parseFloat(match.price) : null;
+	}
+
+	function updateSummary() {
+		if (!selectionList || !priceNode) return;
+		selectionList.innerHTML = '';
+
+		steps.forEach((step) => {
+			if (step.key === 'image') return;
+			const value = state.selections[step.key] || '—';
+			const li = document.createElement('li');
+			li.innerHTML = `<strong>${step.label}:</strong> ${value}`;
+			selectionList.appendChild(li);
+		});
+
+		if (state.selections.image) {
+			const li = document.createElement('li');
+			li.innerHTML = `<strong>Imagen:</strong> ${state.selections.image}`;
+			selectionList.appendChild(li);
+		}
+
+		computePrice();
+		if (state.price !== null && !isNaN(state.price)) {
+			priceNode.textContent = formatter.format(state.price);
+			payBtn?.removeAttribute('disabled');
+		} else {
+			priceNode.textContent = data.strings?.priceNotFound || 'No hay coincidencias';
+			payBtn?.setAttribute('disabled', 'disabled');
+		}
+
+		updatePaypalFields();
+	}
+
+	function updatePaypalFields() {
+		if (!paypalForm) return;
+		if (!settings.paypal_business) {
+			payBtn?.setAttribute('disabled', 'disabled');
+			return;
+		}
+		const description = steps
+			.filter((s) => s.key !== 'image')
+			.map((s) => `${s.label}: ${state.selections[s.key] || '-'}`)
+			.join(' | ');
+		itemNameField.value = description || 'Personalización';
+		if (state.price !== null && !isNaN(state.price)) {
+			amountField.value = state.price.toFixed(2);
+		}
+	}
+
+	function bindImageInput() {
+		if (!imageInput) return;
+		imageInput.addEventListener('change', () => {
+			if (imageInput.files && imageInput.files[0]) {
+				state.selections.image = imageInput.files[0].name;
+				updateSummary();
+			}
+		});
+	}
+
+	function bindActions() {
+		if (sendBtn) {
+			sendBtn.addEventListener('click', sendQuote);
+		}
+		if (payBtn) {
+			payBtn.addEventListener('click', (e) => {
+				e.preventDefault();
+				if (!settings.paypal_business) {
+					messageNode.textContent = 'Configura tu cuenta PayPal en el panel de administración.';
+					return;
+				}
+				if (!state.price) {
+					messageNode.textContent = 'Selecciona todas las opciones para calcular el precio.';
+					return;
+				}
+				paypalForm?.submit();
+			});
+		}
+	}
+
+	function sendQuote() {
+		messageNode.textContent = '';
+		const name = document.getElementById('tuservilleta-name')?.value.trim();
+		const email = document.getElementById('tuservilleta-email')?.value.trim();
+		const phone = document.getElementById('tuservilleta-phone')?.value.trim();
+		const notes = document.getElementById('tuservilleta-notes')?.value.trim();
+		const imageFile = imageInput?.files?.[0];
+
+		if (!name || !email) {
+			messageNode.textContent = data.strings?.quoteError || 'Completa los campos obligatorios.';
+			return;
+		}
+
+		const selections = { ...state.selections };
+		const payload = {
+			selections,
+			price: state.price ? formatter.format(state.price) : null,
+		};
+
+		const form = new FormData();
+		form.append('action', 'tuservilleta_send_quote');
+		form.append('nonce', data.nonce);
+		form.append('name', name);
+		form.append('email', email);
+		form.append('phone', phone || '');
+		form.append('notes', notes || '');
+		form.append('payload', JSON.stringify(payload));
+		if (imageFile) {
+			form.append('image', imageFile);
+		}
+
+		messageNode.textContent = 'Enviando...';
+		fetch(data.ajaxUrl, {
+			method: 'POST',
+			body: form,
+			credentials: 'same-origin',
+		})
+			.then((res) => res.json())
+			.then((response) => {
+				if (response.success) {
+					messageNode.textContent = data.strings?.quoteSent || 'Enviado correctamente.';
+				} else {
+					throw new Error(response.data?.message || 'Error');
+				}
+			})
+			.catch(() => {
+				messageNode.textContent = data.strings?.quoteError || 'No se pudo enviar.';
+			});
+	}
+
+	function loadHubspot() {
+		if (!settings.hubspot_portal_id || !settings.hubspot_form_id) return;
+		if (document.querySelector('script[src*="js.hsforms.net/forms/v2.js"]')) {
+			createHubspotForm();
+			return;
+		}
+
+		const script = document.createElement('script');
+		script.src = 'https://js.hsforms.net/forms/v2.js';
+		script.onload = createHubspotForm;
+		document.body.appendChild(script);
+	}
+
+	function createHubspotForm() {
+		if (!window.hbspt || !window.hbspt.forms) return;
+		const target = document.getElementById('tuservilleta-hubspot');
+		if (!target) return;
+		window.hbspt.forms.create({
+			portalId: settings.hubspot_portal_id,
+			formId: settings.hubspot_form_id,
+			target: '#tuservilleta-hubspot',
+			onFormReady: (form) => {
+				form.style.marginTop = '22px';
+				updateHubspotHidden(form);
+			},
+			onFormSubmit: (form) => {
+				updateHubspotHidden(form);
+			},
+		});
+	}
+
+	function updateHubspotHidden(formEl) {
+		const form = formEl || document.querySelector('#tuservilleta-hubspot form');
+		if (!form) return;
+		const ensureField = (name, value) => {
+			let input = form.querySelector(`input[name="${name}"]`);
+			if (!input) {
+				input = document.createElement('input');
+				input.type = 'hidden';
+				input.name = name;
+				form.appendChild(input);
+			}
+			input.value = value || '';
+		};
+		Object.keys(state.selections).forEach((key) => {
+			ensureField(`tuservilleta_${key}`, state.selections[key]);
+		});
+		if (state.price) {
+			ensureField('tuservilleta_price', state.price);
+		}
+	}
+
+	function render() {
+		renderProgress();
+		renderStep();
+		updateSummary();
+		updateHubspotHidden();
+	}
+
+	function init() {
+		setAccent();
+		if (!catalog.length) {
+			renderEmptyCatalog();
+			return;
+		}
+		bindActions();
+		bindImageInput();
+		render();
+		loadHubspot();
+	}
+
+	init();
+})();
