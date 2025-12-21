@@ -15,6 +15,7 @@
 	const settings = data.settings || {};
 	const priceIndex = new Map();
 	const sanitizeText = (value) => String(value ?? '').replace(/[<>]/g, '');
+	const normalize = (value) => String(value ?? '').trim();
 
 	const state = {
 		currentStep: 0,
@@ -70,7 +71,7 @@
 		steps.slice(0, upToIndex).forEach((step) => {
 			const val = state.selections[step.key];
 			if (val !== null && val !== undefined && val !== '') {
-				filtered = filtered.filter((row) => String(row[step.key]) === String(val));
+				filtered = filtered.filter((row) => normalize(row[step.key]) === normalize(val));
 			}
 		});
 		return filtered;
@@ -79,10 +80,16 @@
 	function optionsForStep(stepIndex) {
 		const step = steps[stepIndex];
 		const filtered = filterCatalog(stepIndex);
+		if (stepIndex === 0) {
+			// Mostrar la primera columna tal cual viene (permite duplicados si el CSV los incluye).
+			return filtered
+				.map((row) => row[step.key])
+				.filter((v) => v !== undefined && v !== null && normalize(v) !== '');
+		}
 		const values = new Set();
 		filtered.forEach((row) => {
-			if (row[step.key] !== undefined && row[step.key] !== null && row[step.key] !== '') {
-				values.add(row[step.key]);
+			if (row[step.key] !== undefined && row[step.key] !== null && normalize(row[step.key]) !== '') {
+				values.add(normalize(row[step.key]));
 			}
 		});
 		return Array.from(values);
@@ -152,11 +159,19 @@
 			return;
 		}
 
+		const stepImages = data.stepImages || {};
 		options.forEach((option) => {
 			const card = document.createElement('div');
 			card.className = 'tuservilleta-card';
 			if (String(state.selections[step.key]) === String(option)) card.classList.add('selected');
-			card.innerHTML = `<div class="title">${option}</div><p class="caption">Elegir ${step.label.toLowerCase()}</p>`;
+			const img = stepImages[step.key];
+			const label = sanitizeText(String(option));
+			card.innerHTML = `
+				${img ? `<div class="thumb" style="background-image:url('${img}')"></div>` : ''}
+				<div class="content">
+					<div class="title">${label}</div>
+					<p class="caption">Elegir ${step.label.toLowerCase()}</p>
+				</div>`;
 			card.addEventListener('click', () => {
 				state.selections[step.key] = option;
 				if (state.currentStep < steps.length - 1) {
@@ -172,13 +187,12 @@
 	function buildPriceIndex() {
 		catalog.forEach((row) => {
 			const key = [
-				row.size,
-				row.type,
-				row.color,
-				row.quantity,
-				row.printing,
+				normalize(row.size),
+				normalize(row.type),
+				normalize(row.color),
+				normalize(row.quantity),
+				normalize(row.printing),
 			]
-				.map((v) => String(v))
 				.join('|');
 			priceIndex.set(key, parseFloat(row.price));
 		});
@@ -190,7 +204,7 @@
 			state.price = null;
 			return;
 		}
-		const key = [size, type, color, quantity, printing].map((v) => String(v)).join('|');
+		const key = [size, type, color, quantity, printing].map((v) => normalize(v)).join('|');
 		state.price = priceIndex.get(key) ?? null;
 	}
 
@@ -233,7 +247,6 @@
 	function updatePaypalFields() {
 		if (!paypalForm) return;
 		if (!settings.paypal_business) {
-			payBtn?.setAttribute('disabled', 'disabled');
 			return;
 		}
 		const description = steps
@@ -266,15 +279,21 @@
 		if (payBtn) {
 			payBtn.addEventListener('click', (e) => {
 				e.preventDefault();
-				if (!settings.paypal_business) {
-					messageNode.textContent = data.strings?.paymentConfigMissing || 'Configura tu cuenta PayPal en el panel de administración.';
-					return;
-				}
 				if (!state.price) {
 					messageNode.textContent = data.strings?.selectOptionsFirst || 'Selecciona todas las opciones para calcular el precio.';
 					return;
 				}
-				paypalForm?.submit();
+				if (settings.stripe_link) {
+					const amount = state.price.toFixed(2);
+					const link = settings.stripe_link.replace('{amount}', amount);
+					window.open(link, '_blank');
+					return;
+				}
+				if (settings.paypal_business) {
+					paypalForm?.submit();
+				} else {
+					messageNode.textContent = data.strings?.paymentConfigMissing || 'Configura tu cuenta PayPal en el panel de administración.';
+				}
 			});
 		}
 	}

@@ -14,7 +14,9 @@
 
 #tuservilleta-steps{background:#fff;border:1px solid #e2e8f0;border-radius:16px;padding:18px;box-shadow:0 10px 30px rgba(0,0,0,.03);}
 .tuservilleta-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;}
-.tuservilleta-card{border:1px solid #e2e8f0;border-radius:14px;padding:16px;background:#f8fafc;cursor:pointer;transition:all .18s ease;min-height:110px;display:flex;flex-direction:column;justify-content:space-between;}
+.tuservilleta-card{border:1px solid #e2e8f0;border-radius:14px;padding:16px;background:#f8fafc;cursor:pointer;transition:all .18s ease;min-height:140px;display:flex;flex-direction:column;justify-content:flex-end;position:relative;overflow:hidden;}
+.tuservilleta-card .thumb{position:absolute;inset:0;opacity:0.18;background-size:cover;background-position:center;}
+.tuservilleta-card .content{position:relative;z-index:2;}
 .tuservilleta-card:hover{transform:translateY(-2px);box-shadow:0 16px 30px rgba(12,23,42,.08);}
 .tuservilleta-card .title{font-weight:700;margin-bottom:8px;}
 .tuservilleta-card .caption{color:#475569;font-size:13px;margin:0;}

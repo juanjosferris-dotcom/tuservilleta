@@ -14,13 +14,14 @@ if ( ! defined( 'ABSPATH' ) ) {
 class Tuservilleta_Plugin {
 	const OPTION_CATALOG  = 'tuservilleta_catalog';
 	const OPTION_SETTINGS = 'tuservilleta_settings';
-	const VERSION         = '1.0.0';
+	const VERSION         = '1.1.0';
 	const MAX_UPLOAD_SIZE = 5242880; // 5MB
 
 	public function __construct() {
 		add_action( 'admin_menu', array( $this, 'register_menu' ) );
 		add_action( 'admin_init', array( $this, 'register_settings' ) );
 		add_action( 'admin_post_tuservilleta_import_catalog', array( $this, 'handle_catalog_import' ) );
+		add_action( 'admin_post_tuservilleta_upload_images', array( $this, 'handle_step_images_upload' ) );
 
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_assets' ) );
 		add_shortcode( 'tuservilleta_customizer', array( $this, 'render_shortcode' ) );
@@ -55,6 +56,8 @@ class Tuservilleta_Plugin {
 					'hubspot_portal_id'  => '',
 					'hubspot_form_id'    => '',
 					'accent_color'       => '#0f172a',
+					'stripe_link'        => '',
+					'step_images'        => array(),
 				),
 			)
 		);
@@ -68,6 +71,8 @@ class Tuservilleta_Plugin {
 		$output['hubspot_portal_id'] = isset( $input['hubspot_portal_id'] ) ? sanitize_text_field( $input['hubspot_portal_id'] ) : '';
 		$output['hubspot_form_id']  = isset( $input['hubspot_form_id'] ) ? sanitize_text_field( $input['hubspot_form_id'] ) : '';
 		$output['accent_color']     = isset( $input['accent_color'] ) ? sanitize_hex_color( $input['accent_color'] ) : '#0f172a';
+		$output['stripe_link']      = isset( $input['stripe_link'] ) ? esc_url_raw( $input['stripe_link'] ) : '';
+		$output['step_images']      = isset( $input['step_images'] ) && is_array( $input['step_images'] ) ? array_map( 'esc_url_raw', $input['step_images'] ) : array();
 
 		return $output;
 	}
@@ -79,10 +84,18 @@ class Tuservilleta_Plugin {
 
 		$catalog  = get_option( self::OPTION_CATALOG, array() );
 		$settings = get_option( self::OPTION_SETTINGS, array() );
+		$tab      = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['tab'] ) ) : 'catalog';
 		?>
 		<div class="wrap tuservilleta-admin">
 			<h1><?php esc_html_e( 'Personalizador Tu Servilleta', 'tuservilleta' ); ?></h1>
 
+			<h2 class="nav-tab-wrapper">
+				<a href="<?php echo esc_url( admin_url( 'admin.php?page=tuservilleta&tab=catalog' ) ); ?>" class="nav-tab <?php echo ( 'catalog' === $tab ) ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Catálogo', 'tuservilleta' ); ?></a>
+				<a href="<?php echo esc_url( admin_url( 'admin.php?page=tuservilleta&tab=payments' ) ); ?>" class="nav-tab <?php echo ( 'payments' === $tab ) ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Pagos', 'tuservilleta' ); ?></a>
+				<a href="<?php echo esc_url( admin_url( 'admin.php?page=tuservilleta&tab=steps' ) ); ?>" class="nav-tab <?php echo ( 'steps' === $tab ) ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Imágenes de pasos', 'tuservilleta' ); ?></a>
+			</h2>
+
+			<?php if ( 'catalog' === $tab ) : ?>
 			<div class="tuservilleta-cards">
 				<div class="card">
 					<h2><?php esc_html_e( 'Importar catálogo', 'tuservilleta' ); ?></h2>
@@ -99,13 +112,15 @@ class Tuservilleta_Plugin {
 						<?php echo esc_html( count( $catalog ) ); ?>
 					</p>
 				</div>
+			</div>
+			<?php endif; ?>
 
+			<?php if ( 'payments' === $tab ) : ?>
+			<div class="tuservilleta-cards">
 				<div class="card">
-					<h2><?php esc_html_e( 'Integraciones y ajustes', 'tuservilleta' ); ?></h2>
+					<h2><?php esc_html_e( 'Pagos (PayPal / Stripe)', 'tuservilleta' ); ?></h2>
 					<form method="post" action="options.php">
-						<?php
-						settings_fields( 'tuservilleta_settings_group' );
-						?>
+						<?php settings_fields( 'tuservilleta_settings_group' ); ?>
 						<table class="form-table">
 							<tr>
 								<th scope="row"><?php esc_html_e( 'Correo de contacto', 'tuservilleta' ); ?></th>
@@ -119,6 +134,13 @@ class Tuservilleta_Plugin {
 								<td>
 									<input type="text" name="<?php echo esc_attr( self::OPTION_SETTINGS ); ?>[paypal_business]" value="<?php echo isset( $settings['paypal_business'] ) ? esc_attr( $settings['paypal_business'] ) : ''; ?>" class="regular-text" />
 									<p class="description"><?php esc_html_e( 'Cuenta para pagos directos (PayPal Standard). Permite tarjeta invitado.', 'tuservilleta' ); ?></p>
+								</td>
+							</tr>
+							<tr>
+								<th scope="row"><?php esc_html_e( 'Enlace de pago Stripe', 'tuservilleta' ); ?></th>
+								<td>
+									<input type="text" name="<?php echo esc_attr( self::OPTION_SETTINGS ); ?>[stripe_link]" value="<?php echo isset( $settings['stripe_link'] ) ? esc_attr( $settings['stripe_link'] ) : ''; ?>" class="regular-text" />
+									<p class="description"><?php esc_html_e( 'Opcional: enlace de Stripe Checkout/Payment Link. Usa {amount} para insertar el importe (p.ej. https://pay.stripe.com/link/xxxxx?prefilled_amount={amount}).', 'tuservilleta' ); ?></p>
 								</td>
 							</tr>
 							<tr>
@@ -144,6 +166,45 @@ class Tuservilleta_Plugin {
 					</form>
 				</div>
 			</div>
+			<?php endif; ?>
+
+			<?php if ( 'steps' === $tab ) : ?>
+			<div class="tuservilleta-cards">
+				<div class="card">
+					<h2><?php esc_html_e( 'Imágenes por paso', 'tuservilleta' ); ?></h2>
+					<p><?php esc_html_e( 'Sube imágenes elegantes para mostrar en cada tarjeta de selección.', 'tuservilleta' ); ?></p>
+					<form method="post" enctype="multipart/form-data" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+						<input type="hidden" name="action" value="tuservilleta_upload_images" />
+						<?php wp_nonce_field( 'tuservilleta_steps', 'tuservilleta_steps_nonce' ); ?>
+						<table class="form-table">
+							<?php
+							$step_keys = array(
+								'size'     => __( 'Tamaño', 'tuservilleta' ),
+								'type'     => __( 'Calidad', 'tuservilleta' ),
+								'color'    => __( 'Color', 'tuservilleta' ),
+								'quantity' => __( 'Cantidad', 'tuservilleta' ),
+								'printing' => __( 'Impresión', 'tuservilleta' ),
+								'image'    => __( 'Imagen', 'tuservilleta' ),
+							);
+							foreach ( $step_keys as $key => $label ) :
+								$current = isset( $settings['step_images'][ $key ] ) ? $settings['step_images'][ $key ] : '';
+								?>
+								<tr>
+									<th scope="row"><?php echo esc_html( $label ); ?></th>
+									<td>
+										<input type="file" name="step_image_<?php echo esc_attr( $key ); ?>" accept="image/*" />
+										<?php if ( $current ) : ?>
+											<p><img src="<?php echo esc_url( $current ); ?>" alt="" style="max-width:120px;height:auto;border-radius:8px;" /></p>
+										<?php endif; ?>
+									</td>
+								</tr>
+							<?php endforeach; ?>
+						</table>
+						<?php submit_button( __( 'Guardar imágenes', 'tuservilleta' ) ); ?>
+					</form>
+				</div>
+			</div>
+			<?php endif; ?>
 		</div>
 		<style>
 			.tuservilleta-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:24px;margin-top:20px;}
@@ -180,6 +241,11 @@ class Tuservilleta_Plugin {
 					continue;
 				}
 
+				// Skip header rows if present.
+				if ( isset( $data[0] ) && preg_match( '/size/i', $data[0] ) ) {
+					continue;
+				}
+
 				$rows[] = array(
 					'size'     => sanitize_text_field( $data[0] ),
 					'type'     => sanitize_text_field( $data[1] ),
@@ -194,6 +260,48 @@ class Tuservilleta_Plugin {
 
 		update_option( self::OPTION_CATALOG, $rows );
 		wp_safe_redirect( add_query_arg( 'tuservilleta', 'imported', admin_url( 'admin.php?page=tuservilleta' ) ) );
+		exit;
+	}
+
+	public function handle_step_images_upload() {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_die( esc_html__( 'No autorizado', 'tuservilleta' ) );
+		}
+		check_admin_referer( 'tuservilleta_steps', 'tuservilleta_steps_nonce' );
+
+		$settings             = get_option( self::OPTION_SETTINGS, array() );
+		$settings['step_images'] = isset( $settings['step_images'] ) && is_array( $settings['step_images'] ) ? $settings['step_images'] : array();
+
+		$step_keys = array( 'size', 'type', 'color', 'quantity', 'printing', 'image' );
+		foreach ( $step_keys as $key ) {
+			if ( empty( $_FILES[ 'step_image_' . $key ]['tmp_name'] ) ) {
+				continue;
+			}
+
+			if ( ! empty( $_FILES[ 'step_image_' . $key ]['size'] ) && (int) $_FILES[ 'step_image_' . $key ]['size'] > self::MAX_UPLOAD_SIZE ) {
+				continue;
+			}
+
+			$uploaded = wp_handle_upload(
+				$_FILES[ 'step_image_' . $key ],
+				array(
+					'test_form' => false,
+					'mimes'     => array(
+						'jpg|jpeg' => 'image/jpeg',
+						'png'      => 'image/png',
+						'gif'      => 'image/gif',
+						'webp'     => 'image/webp',
+					),
+				)
+			);
+
+			if ( isset( $uploaded['url'] ) && empty( $uploaded['error'] ) ) {
+				$settings['step_images'][ $key ] = esc_url_raw( $uploaded['url'] );
+			}
+		}
+
+		update_option( self::OPTION_SETTINGS, $settings );
+		wp_safe_redirect( admin_url( 'admin.php?page=tuservilleta&tab=steps' ) );
 		exit;
 	}
 
@@ -249,6 +357,7 @@ class Tuservilleta_Plugin {
 					'paymentConfigMissing' => __( 'Configura tu cuenta PayPal en el panel de administración.', 'tuservilleta' ),
 					'selectOptionsFirst'   => __( 'Selecciona todas las opciones para calcular el precio.', 'tuservilleta' ),
 				),
+				'stepImages' => isset( $settings['step_images'] ) ? $settings['step_images'] : array(),
 			)
 		);
 
