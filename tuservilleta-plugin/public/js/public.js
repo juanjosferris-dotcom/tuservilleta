@@ -20,155 +20,111 @@
             this.loadStep(1);
         },
 
-        // Helper function to normalize text for comparison (remove punctuation, extra spaces, lowercase)
+        // Helper function to normalize text for comparison
         normalizeText: function(text) {
             if (!text) return '';
-            return text.toLowerCase()
+            return String(text).toLowerCase()
                 .trim()
+                .replace(/[áéíóúñ]/g, function(c) {
+                    // Replace accented characters with unaccented equivalents
+                    var map = {'á':'a','é':'e','í':'i','ó':'o','ú':'u','ñ':'n'};
+                    return map[c] || c;
+                })
                 .replace(/[.,;:()]/g, '') // Remove punctuation
-                .replace(/\s+/g, ' ')      // Normalize spaces
+                .replace(/\s+/g, ' ')
                 .trim();
         },
 
-        // Helper function to check if two options likely refer to the same product
-        optionsMatch: function(opt1, opt2) {
+        // Simple function to check if two options might match (for image lookup)
+        simpleMatch: function(opt1, opt2) {
             if (!opt1 || !opt2) return false;
             
             var norm1 = this.normalizeText(opt1);
             var norm2 = this.normalizeText(opt2);
             
-            // Exact normalized match
+            // Exact match after normalization
             if (norm1 === norm2) return true;
             
-            // One contains the other
-            if (norm1.indexOf(norm2) !== -1 || norm2.indexOf(norm1) !== -1) return true;
-            
-            // Extract key parts and compare
-            // For servilletas: extract the dimension (e.g., "20x20")
-            var dimMatch1 = opt1.match(/(\d+x\d+)/i);
-            var dimMatch2 = opt2.match(/(\d+x\d+)/i);
-            if (dimMatch1 && dimMatch2 && dimMatch1[1] === dimMatch2[1]) {
-                // Same dimension, check if same product type
-                var isServ1 = norm1.indexOf('servilleta') !== -1;
-                var isServ2 = norm2.indexOf('servilleta') !== -1;
-                var isPosa1 = norm1.indexOf('posavaso') !== -1;
-                var isPosa2 = norm2.indexOf('posavaso') !== -1;
-                var isMant1 = norm1.indexOf('manteli') !== -1;
-                var isMant2 = norm2.indexOf('manteli') !== -1;
-                
-                if ((isServ1 && isServ2) || (isPosa1 && isPosa2) || (isMant1 && isMant2)) {
-                    // Same product type with same dimension - check if same fold type
-                    var fold1 = opt1.match(/\(([^)]+)\)/);
-                    var fold2 = opt2.match(/\(([^)]+)\)/);
-                    if (fold1 && fold2) {
-                        return this.normalizeText(fold1[1]) === this.normalizeText(fold2[1]);
-                    }
-                    // If one has fold info and other doesn't, still might match
-                    if (!fold1 && !fold2) return true;
-                }
-            }
-            
-            // For posavasos: check shape (redondo/cuadrado)
-            var isRound1 = norm1.indexOf('redondo') !== -1;
-            var isRound2 = norm2.indexOf('redondo') !== -1;
-            var isSquare1 = norm1.indexOf('cuadrado') !== -1;
-            var isSquare2 = norm2.indexOf('cuadrado') !== -1;
-            if ((norm1.indexOf('posavaso') !== -1 && norm2.indexOf('posavaso') !== -1)) {
-                if ((isRound1 && isRound2) || (isSquare1 && isSquare2)) {
-                    return true;
-                }
-            }
-            
-            // For types: check key words
-            var types = ['2 capas', '3 capas', 'doble punto', 'tisu seco', 'tisú seco'];
-            for (var i = 0; i < types.length; i++) {
-                var type = types[i];
-                if (norm1.indexOf(type.replace('ú', 'u')) !== -1 && norm2.indexOf(type.replace('ú', 'u')) !== -1) {
-                    return true;
-                }
-            }
-            
-            // For printing: check key words
-            var printings = ['deluxe', '1 tinta', '2 tintas', 'todo color', 'sin personalizar', 'estandar', 'estándar'];
-            var match1 = [];
-            var match2 = [];
-            for (var i = 0; i < printings.length; i++) {
-                var p = printings[i].replace('á', 'a');
-                if (norm1.indexOf(p) !== -1) match1.push(p);
-                if (norm2.indexOf(p) !== -1) match2.push(p);
-            }
-            if (match1.length > 0 && match2.length > 0) {
-                // Check if same key printing characteristics
-                var deluxe1 = norm1.indexOf('deluxe') !== -1;
-                var deluxe2 = norm2.indexOf('deluxe') !== -1;
-                var digital1 = norm1.indexOf('digital') !== -1;
-                var digital2 = norm2.indexOf('digital') !== -1;
-                var sinPers1 = norm1.indexOf('sin personalizar') !== -1;
-                var sinPers2 = norm2.indexOf('sin personalizar') !== -1;
-                var estandar1 = norm1.indexOf('estandar') !== -1 || norm1.indexOf('estándar') !== -1;
-                var estandar2 = norm2.indexOf('estandar') !== -1 || norm2.indexOf('estándar') !== -1;
-                // Check for 1 tinta (matching both singular and plural)
-                var oneTinta1 = norm1.indexOf('1 tinta') !== -1;
-                var oneTinta2 = norm2.indexOf('1 tinta') !== -1;
-                // Check for 2 tintas (matching both singular and plural)
-                var twoTintas1 = norm1.indexOf('2 tinta') !== -1;
-                var twoTintas2 = norm2.indexOf('2 tinta') !== -1;
-                
-                if ((deluxe1 && deluxe2 && ((oneTinta1 && oneTinta2) || (twoTintas1 && twoTintas2))) ||
-                    (digital1 && digital2) ||
-                    (sinPers1 && sinPers2) ||
-                    (estandar1 && estandar2 && ((oneTinta1 && oneTinta2) || (twoTintas1 && twoTintas2)))) {
-                    return true;
-                }
+            // One contains the other (at least 5 chars to avoid false positives)
+            if (norm1.length >= 5 && norm2.length >= 5) {
+                if (norm1.indexOf(norm2) !== -1 || norm2.indexOf(norm1) !== -1) return true;
             }
             
             return false;
         },
 
-        // Helper function to sort options based on predefined order
+        // Get sorting index for an option based on predefined order
+        getSortIndex: function(option, predefinedOptions) {
+            var optNorm = this.normalizeText(option);
+            
+            for (var i = 0; i < predefinedOptions.length; i++) {
+                var predNorm = this.normalizeText(predefinedOptions[i]);
+                
+                // Exact match
+                if (optNorm === predNorm) return i;
+                
+                // Partial match (one contains the other)
+                if (optNorm.length >= 5 && predNorm.length >= 5) {
+                    if (optNorm.indexOf(predNorm) !== -1 || predNorm.indexOf(optNorm) !== -1) {
+                        return i;
+                    }
+                }
+            }
+            
+            return 999; // Unknown options go to end
+        },
+
+        // Sort options based on predefined order
         sortOptions: function(options, stepKey) {
             var self = this;
-            var predefinedOrder = tuservilleta.step_options[stepKey] || [];
+            
+            if (!options || !Array.isArray(options)) {
+                console.error('sortOptions: invalid options', options);
+                return options || [];
+            }
+            
+            var predefinedOrder = (tuservilleta.step_options && tuservilleta.step_options[stepKey]) || [];
             
             if (predefinedOrder.length === 0) {
                 return options;
             }
 
-            // Sort options based on predefined order using improved matching
-            return options.slice().sort(function(a, b) {
-                // Find position in predefined order
-                var aIndex = -1;
-                var bIndex = -1;
-
-                for (var i = 0; i < predefinedOrder.length; i++) {
-                    if (aIndex === -1 && self.optionsMatch(a, predefinedOrder[i])) {
-                        aIndex = i;
+            try {
+                return options.slice().sort(function(a, b) {
+                    var aIndex = self.getSortIndex(a, predefinedOrder);
+                    var bIndex = self.getSortIndex(b, predefinedOrder);
+                    
+                    if (aIndex !== bIndex) {
+                        return aIndex - bIndex;
                     }
-                    if (bIndex === -1 && self.optionsMatch(b, predefinedOrder[i])) {
-                        bIndex = i;
-                    }
-                }
-
-                // If both found in predefined, use that order
-                if (aIndex !== -1 && bIndex !== -1) {
-                    return aIndex - bIndex;
-                }
-                // If only one found, prioritize it
-                if (aIndex !== -1) return -1;
-                if (bIndex !== -1) return 1;
-                // Otherwise alphabetical
-                return a.localeCompare(b);
-            });
+                    // Same index, use alphabetical
+                    return String(a).localeCompare(String(b));
+                });
+            } catch (e) {
+                console.error('sortOptions error:', e);
+                return options;
+            }
         },
 
-        // Helper function to sort quantity options numerically
+        // Sort quantity options numerically
         sortQuantities: function(options) {
-            return options.slice().sort(function(a, b) {
-                // Extract numeric value from strings like "250 uds.", "1.000 uds."
-                var aNum = parseInt(a.replace(/\./g, '').replace(/[^\d]/g, ''), 10) || 0;
-                var bNum = parseInt(b.replace(/\./g, '').replace(/[^\d]/g, ''), 10) || 0;
-                return aNum - bNum;
-            });
+            if (!options || !Array.isArray(options)) {
+                return options || [];
+            }
+            
+            try {
+                return options.slice().sort(function(a, b) {
+                    // Extract numeric value from strings like "250 uds.", "1.000 uds."
+                    var aStr = String(a).replace(/\./g, '').replace(/[^\d]/g, '');
+                    var bStr = String(b).replace(/\./g, '').replace(/[^\d]/g, '');
+                    var aNum = parseInt(aStr, 10) || 0;
+                    var bNum = parseInt(bStr, 10) || 0;
+                    return aNum - bNum;
+                });
+            } catch (e) {
+                console.error('sortQuantities error:', e);
+                return options;
+            }
         },
 
         bindEvents: function() {
@@ -311,32 +267,38 @@
             var self = this;
             if (!option) return '';
             
-            // First try exact match
-            if (images[option]) {
-                return images[option];
-            }
-            
-            // Try using the improved optionsMatch function against predefined options
-            // The images are keyed by predefined option names, so we need to find which predefined option matches
-            for (var i = 0; i < predefinedOptions.length; i++) {
-                var predefined = predefinedOptions[i];
+            try {
+                // First try exact match
+                if (images && images[option]) {
+                    return images[option];
+                }
                 
-                if (self.optionsMatch(option, predefined)) {
-                    // Found a matching predefined option, return its image
-                    if (images[predefined]) {
-                        return images[predefined];
+                // Try matching against predefined options using simpleMatch
+                if (predefinedOptions && Array.isArray(predefinedOptions)) {
+                    for (var i = 0; i < predefinedOptions.length; i++) {
+                        var predefined = predefinedOptions[i];
+                        
+                        if (self.simpleMatch(option, predefined)) {
+                            // Found a matching predefined option, return its image
+                            if (images && images[predefined]) {
+                                return images[predefined];
+                            }
+                        }
                     }
                 }
-            }
-            
-            // Fallback: try normalized match directly in images object
-            var normalizedOption = self.normalizeText(option);
-            for (var key in images) {
-                if (images.hasOwnProperty(key) && images[key]) {
-                    if (self.optionsMatch(option, key)) {
-                        return images[key];
+                
+                // Fallback: try direct match in images object
+                if (images) {
+                    for (var key in images) {
+                        if (images.hasOwnProperty(key) && images[key]) {
+                            if (self.simpleMatch(option, key)) {
+                                return images[key];
+                            }
+                        }
                     }
                 }
+            } catch (e) {
+                console.error('findImageForOption error:', e);
             }
             
             return '';
@@ -345,30 +307,42 @@
         renderOptions: function(stepKey, $container, availableOptions) {
             var self = this;
             var html = '';
-            var images = tuservilleta.images[stepKey] || {};
-            var predefinedOptions = tuservilleta.step_options[stepKey] || [];
             
-            // Sort options based on predefined order
-            var sortedOptions = self.sortOptions(availableOptions, stepKey);
-
-            // Show all available options from the database directly (sorted)
-            sortedOptions.forEach(function(option) {
-                if (!option || option.trim() === '') {
-                    return; // Skip empty options
+            try {
+                var images = (tuservilleta.images && tuservilleta.images[stepKey]) || {};
+                var predefinedOptions = (tuservilleta.step_options && tuservilleta.step_options[stepKey]) || [];
+                
+                // Ensure availableOptions is an array
+                if (!availableOptions || !Array.isArray(availableOptions)) {
+                    console.error('renderOptions: invalid availableOptions', availableOptions);
+                    $container.html('<p style="text-align:center;color:#666;">No hay opciones disponibles.</p>');
+                    return;
                 }
+                
+                // Sort options based on predefined order
+                var sortedOptions = self.sortOptions(availableOptions, stepKey);
 
-                // Find matching image using flexible matching
-                var imageUrl = self.findImageForOption(option, images, predefinedOptions);
+                // Show all available options from the database directly (sorted)
+                sortedOptions.forEach(function(option) {
+                    if (!option || String(option).trim() === '') {
+                        return; // Skip empty options
+                    }
 
-                var imageHtml = imageUrl 
-                    ? '<img src="' + imageUrl + '" alt="' + option + '">' 
-                    : '<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>';
+                    // Find matching image using flexible matching
+                    var imageUrl = self.findImageForOption(option, images, predefinedOptions);
 
-                html += '<div class="tuservilleta-option" data-value="' + option + '">';
-                html += '<div class="option-image">' + imageHtml + '</div>';
-                html += '<div class="option-name">' + option + '</div>';
-                html += '</div>';
-            });
+                    var imageHtml = imageUrl 
+                        ? '<img src="' + imageUrl + '" alt="' + option + '">' 
+                        : '<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>';
+
+                    html += '<div class="tuservilleta-option" data-value="' + option + '">';
+                    html += '<div class="option-image">' + imageHtml + '</div>';
+                    html += '<div class="option-name">' + option + '</div>';
+                    html += '</div>';
+                });
+            } catch (e) {
+                console.error('renderOptions error:', e);
+            }
 
             if (html === '') {
                 html = '<p style="text-align:center;color:#666;grid-column:1/-1;">No hay opciones disponibles para esta combinación.</p>';
