@@ -104,11 +104,12 @@ class Tuservilleta_Form {
         
         // Display success/error messages
         if (isset($_GET['form_status'])) {
-            if ($_GET['form_status'] === 'success') {
+            $form_status = sanitize_text_field($_GET['form_status']);
+            if ($form_status === 'success') {
                 echo '<div class="tuservilleta-form-message tuservilleta-form-success">';
                 echo esc_html__('Thank you! Your message has been sent successfully.', 'tuservilleta-form');
                 echo '</div>';
-            } elseif ($_GET['form_status'] === 'error') {
+            } elseif ($form_status === 'error') {
                 echo '<div class="tuservilleta-form-message tuservilleta-form-error">';
                 echo esc_html__('There was an error submitting your form. Please try again.', 'tuservilleta-form');
                 echo '</div>';

@@ -177,6 +177,25 @@ class Tuservilleta_Form_Handler {
      * @return int|false Post ID on success, false on failure
      */
     private function save_submission($form_data) {
+        // Get a valid user ID for post author
+        $author_id = get_current_user_id();
+        
+        // If no user is logged in, use first administrator
+        if (!$author_id) {
+            $admins = get_users(array(
+                'role'    => 'administrator',
+                'number'  => 1,
+                'orderby' => 'ID'
+            ));
+            
+            if (!empty($admins)) {
+                $author_id = $admins[0]->ID;
+            } else {
+                // Fallback to ID 1 if no admin found
+                $author_id = 1;
+            }
+        }
+        
         // Create a custom post type entry for the submission
         $post_data = array(
             'post_title'   => sprintf(
@@ -186,7 +205,7 @@ class Tuservilleta_Form_Handler {
             'post_content' => $form_data['message'],
             'post_status'  => 'private',
             'post_type'    => 'tuservilleta_submission',
-            'post_author'  => 1
+            'post_author'  => $author_id
         );
         
         $post_id = wp_insert_post($post_data);

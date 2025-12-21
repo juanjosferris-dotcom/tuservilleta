@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tuservilleta Form Plugin - Demo</title>
+    <link rel="stylesheet" href="wp-content/plugins/tuservilleta-form/assets/css/style.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 40px 20px;
+            margin: 0;
+            min-height: 100vh;
+        }
+        .demo-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .demo-header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+        .demo-header h1 {
+            font-size: 36px;
+            margin-bottom: 10px;
+        }
+        .demo-header p {
+            font-size: 18px;
+            opacity: 0.9;
+        }
+        .demo-info {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+        .demo-info h2 {
+            margin-top: 0;
+            color: #333;
+        }
+        .demo-info code {
+            background: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-container">
+        <div class="demo-header">
+            <h1>🎨 Tuservilleta Form Plugin</h1>
+            <p>WordPress Contact Form Plugin Demo</p>
+        </div>
+
+        <div class="demo-info">
+            <h2>Plugin Information</h2>
+            <p><strong>Usage:</strong> Add the shortcode <code>[tuservilleta_form]</code> to any WordPress page or post.</p>
+            <p><strong>Customization:</strong> <code>[tuservilleta_form title="Get in Touch" submit_text="Send Message"]</code></p>
+            <p><strong>Features:</strong></p>
+            <ul>
+                <li>✅ Responsive design for all devices</li>
+                <li>✅ Real-time client-side validation</li>
+                <li>✅ Server-side validation and sanitization</li>
+                <li>✅ CSRF protection with WordPress nonces</li>
+                <li>✅ Email notifications to admin</li>
+                <li>✅ Database storage of submissions</li>
+                <li>✅ Full localization support</li>
+                <li>✅ Accessibility compliant (WCAG)</li>
+            </ul>
+        </div>
+
+        <!-- Form Demo -->
+        <div class="tuservilleta-form-container">
+            <form id="tuservilleta-form" class="tuservilleta-form" method="post" action="" novalidate>
+                
+                <h2 class="tuservilleta-form-title">Contact Us</h2>
+                
+                <div class="tuservilleta-form-row">
+                    <div class="tuservilleta-form-field">
+                        <label for="tuservilleta_name">
+                            Name <span class="required">*</span>
+                        </label>
+                        <input 
+                            type="text" 
+                            id="tuservilleta_name" 
+                            name="tuservilleta_name" 
+                            class="tuservilleta-input" 
+                            required
+                            placeholder="Your name"
+                        >
+                        <span class="tuservilleta-error-message"></span>
+                    </div>
+                </div>
+                
+                <div class="tuservilleta-form-row">
+                    <div class="tuservilleta-form-field">
+                        <label for="tuservilleta_email">
+                            Email <span class="required">*</span>
+                        </label>
+                        <input 
+                            type="email" 
+                            id="tuservilleta_email" 
+                            name="tuservilleta_email" 
+                            class="tuservilleta-input" 
+                            required
+                            placeholder="your.email@example.com"
+                        >
+                        <span class="tuservilleta-error-message"></span>
+                    </div>
+                </div>
+                
+                <div class="tuservilleta-form-row">
+                    <div class="tuservilleta-form-field">
+                        <label for="tuservilleta_phone">
+                            Phone
+                        </label>
+                        <input 
+                            type="tel" 
+                            id="tuservilleta_phone" 
+                            name="tuservilleta_phone" 
+                            class="tuservilleta-input"
+                            placeholder="Your phone number"
+                        >
+                        <span class="tuservilleta-error-message"></span>
+                    </div>
+                </div>
+                
+                <div class="tuservilleta-form-row">
+                    <div class="tuservilleta-form-field">
+                        <label for="tuservilleta_subject">
+                            Subject <span class="required">*</span>
+                        </label>
+                        <input 
+                            type="text" 
+                            id="tuservilleta_subject" 
+                            name="tuservilleta_subject" 
+                            class="tuservilleta-input" 
+                            required
+                            placeholder="Subject of your message"
+                        >
+                        <span class="tuservilleta-error-message"></span>
+                    </div>
+                </div>
+                
+                <div class="tuservilleta-form-row">
+                    <div class="tuservilleta-form-field">
+                        <label for="tuservilleta_message">
+                            Message <span class="required">*</span>
+                        </label>
+                        <textarea 
+                            id="tuservilleta_message" 
+                            name="tuservilleta_message" 
+                            class="tuservilleta-textarea" 
+                            rows="6" 
+                            required
+                            placeholder="Your message..."
+                        ></textarea>
+                        <span class="tuservilleta-error-message"></span>
+                    </div>
+                </div>
+                
+                <input type="hidden" name="tuservilleta_form_nonce" value="demo_nonce_12345">
+                
+                <div class="tuservilleta-form-row">
+                    <button type="submit" class="tuservilleta-submit-btn">
+                        Submit
+                    </button>
+                </div>
+                
+            </form>
+        </div>
+
+        <div class="demo-info" style="margin-top: 30px;">
+            <h2>Testing the Form</h2>
+            <p>In this demo:</p>
+            <ul>
+                <li>Try submitting the form with empty fields to see validation errors</li>
+                <li>Enter an invalid email to see email validation</li>
+                <li>Watch the real-time character counter on the message field</li>
+                <li>See how error messages appear and disappear</li>
+                <li>Notice the loading state on the submit button</li>
+            </ul>
+            <p><em>Note: This is a static demo. In WordPress, the form will actually submit and send emails.</em></p>
+        </div>
+    </div>
+
+    <script>
+        // Mock tuservilletaForm object for demo
+        var tuservilletaForm = {
+            ajaxurl: '/wp-admin/admin-ajax.php',
+            nonce: 'demo_nonce',
+            messages: {
+                required: 'This field is required.',
+                email: 'Please enter a valid email address.',
+                phone: 'Please enter a valid phone number.',
+                success: 'Form submitted successfully!',
+                error: 'An error occurred. Please try again.'
+            }
+        };
+    </script>
+    <script src="wp-content/plugins/tuservilleta-form/assets/js/validation.js"></script>
+</body>
+</html>

@@ -228,10 +228,13 @@
             const submitBtn = form.find('.tuservilleta-submit-btn');
             submitBtn.prop('disabled', true).addClass('loading');
             
-            // Submit form normally (non-AJAX for compatibility)
+            // Submit form normally (non-AJAX for compatibility and simplicity)
+            // Note: This is secure because the server-side validates the nonce
+            // and sanitizes all inputs regardless of client-side submission method
             this.submit();
             
-            // Alternatively, you can use AJAX submission (commented out):
+            // Alternative AJAX submission (for enhanced UX without page reload):
+            // Uncomment this block and comment out "this.submit()" above to enable
             /*
             $.ajax({
                 url: tuservilletaForm.ajaxurl,
