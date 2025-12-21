@@ -368,7 +368,6 @@ class Tuservilleta_Plugin {
 				<div>
 					<p class="eyebrow"><?php esc_html_e( 'Personalizador premium', 'tuservilleta' ); ?></p>
 					<h2><?php esc_html_e( 'Diseña tu servilleta o posavasos', 'tuservilleta' ); ?></h2>
-					<p class="sub"><?php esc_html_e( 'Seis pasos guiados al estilo Tesla / Ryanair. Selecciona la tarjeta y avanzamos al instante.', 'tuservilleta' ); ?></p>
 				</div>
 				<div class="pill"><?php esc_html_e( '6 pasos', 'tuservilleta' ); ?></div>
 			</div>
