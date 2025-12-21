@@ -30,6 +30,101 @@
                 .trim();
         },
 
+        // Helper function to check if two options likely refer to the same product
+        optionsMatch: function(opt1, opt2) {
+            if (!opt1 || !opt2) return false;
+            
+            var norm1 = this.normalizeText(opt1);
+            var norm2 = this.normalizeText(opt2);
+            
+            // Exact normalized match
+            if (norm1 === norm2) return true;
+            
+            // One contains the other
+            if (norm1.indexOf(norm2) !== -1 || norm2.indexOf(norm1) !== -1) return true;
+            
+            // Extract key parts and compare
+            // For servilletas: extract the dimension (e.g., "20x20")
+            var dimMatch1 = opt1.match(/(\d+x\d+)/i);
+            var dimMatch2 = opt2.match(/(\d+x\d+)/i);
+            if (dimMatch1 && dimMatch2 && dimMatch1[1] === dimMatch2[1]) {
+                // Same dimension, check if same product type
+                var isServ1 = norm1.indexOf('servilleta') !== -1;
+                var isServ2 = norm2.indexOf('servilleta') !== -1;
+                var isPosa1 = norm1.indexOf('posavaso') !== -1;
+                var isPosa2 = norm2.indexOf('posavaso') !== -1;
+                var isMant1 = norm1.indexOf('manteli') !== -1;
+                var isMant2 = norm2.indexOf('manteli') !== -1;
+                
+                if ((isServ1 && isServ2) || (isPosa1 && isPosa2) || (isMant1 && isMant2)) {
+                    // Same product type with same dimension - check if same fold type
+                    var fold1 = opt1.match(/\(([^)]+)\)/);
+                    var fold2 = opt2.match(/\(([^)]+)\)/);
+                    if (fold1 && fold2) {
+                        return this.normalizeText(fold1[1]) === this.normalizeText(fold2[1]);
+                    }
+                    // If one has fold info and other doesn't, still might match
+                    if (!fold1 && !fold2) return true;
+                }
+            }
+            
+            // For posavasos: check shape (redondo/cuadrado)
+            var isRound1 = norm1.indexOf('redondo') !== -1;
+            var isRound2 = norm2.indexOf('redondo') !== -1;
+            var isSquare1 = norm1.indexOf('cuadrado') !== -1;
+            var isSquare2 = norm2.indexOf('cuadrado') !== -1;
+            if ((norm1.indexOf('posavaso') !== -1 && norm2.indexOf('posavaso') !== -1)) {
+                if ((isRound1 && isRound2) || (isSquare1 && isSquare2)) {
+                    return true;
+                }
+            }
+            
+            // For types: check key words
+            var types = ['2 capas', '3 capas', 'doble punto', 'tisu seco', 'tisú seco'];
+            for (var i = 0; i < types.length; i++) {
+                var type = types[i];
+                if (norm1.indexOf(type.replace('ú', 'u')) !== -1 && norm2.indexOf(type.replace('ú', 'u')) !== -1) {
+                    return true;
+                }
+            }
+            
+            // For printing: check key words
+            var printings = ['deluxe', '1 tinta', '2 tintas', 'todo color', 'sin personalizar', 'estandar', 'estándar'];
+            var match1 = [];
+            var match2 = [];
+            for (var i = 0; i < printings.length; i++) {
+                var p = printings[i].replace('á', 'a');
+                if (norm1.indexOf(p) !== -1) match1.push(p);
+                if (norm2.indexOf(p) !== -1) match2.push(p);
+            }
+            if (match1.length > 0 && match2.length > 0) {
+                // Check if same key printing characteristics
+                var deluxe1 = norm1.indexOf('deluxe') !== -1;
+                var deluxe2 = norm2.indexOf('deluxe') !== -1;
+                var digital1 = norm1.indexOf('digital') !== -1;
+                var digital2 = norm2.indexOf('digital') !== -1;
+                var sinPers1 = norm1.indexOf('sin personalizar') !== -1;
+                var sinPers2 = norm2.indexOf('sin personalizar') !== -1;
+                var estandar1 = norm1.indexOf('estandar') !== -1 || norm1.indexOf('estándar') !== -1;
+                var estandar2 = norm2.indexOf('estandar') !== -1 || norm2.indexOf('estándar') !== -1;
+                // Check for 1 tinta (matching both singular and plural)
+                var oneTinta1 = norm1.indexOf('1 tinta') !== -1;
+                var oneTinta2 = norm2.indexOf('1 tinta') !== -1;
+                // Check for 2 tintas (matching both singular and plural)
+                var twoTintas1 = norm1.indexOf('2 tinta') !== -1;
+                var twoTintas2 = norm2.indexOf('2 tinta') !== -1;
+                
+                if ((deluxe1 && deluxe2 && ((oneTinta1 && oneTinta2) || (twoTintas1 && twoTintas2))) ||
+                    (digital1 && digital2) ||
+                    (sinPers1 && sinPers2) ||
+                    (estandar1 && estandar2 && ((oneTinta1 && oneTinta2) || (twoTintas1 && twoTintas2)))) {
+                    return true;
+                }
+            }
+            
+            return false;
+        },
+
         // Helper function to sort options based on predefined order
         sortOptions: function(options, stepKey) {
             var self = this;
@@ -39,26 +134,17 @@
                 return options;
             }
 
-            // Create normalized versions for matching
-            var predefinedNormalized = predefinedOrder.map(function(opt) {
-                return self.normalizeText(opt);
-            });
-
-            // Sort options based on predefined order
+            // Sort options based on predefined order using improved matching
             return options.slice().sort(function(a, b) {
-                var aNorm = self.normalizeText(a);
-                var bNorm = self.normalizeText(b);
-
-                // Find position in predefined order (use partial matching)
+                // Find position in predefined order
                 var aIndex = -1;
                 var bIndex = -1;
 
-                for (var i = 0; i < predefinedNormalized.length; i++) {
-                    var predNorm = predefinedNormalized[i];
-                    if (aIndex === -1 && (aNorm === predNorm || aNorm.indexOf(predNorm) !== -1 || predNorm.indexOf(aNorm) !== -1)) {
+                for (var i = 0; i < predefinedOrder.length; i++) {
+                    if (aIndex === -1 && self.optionsMatch(a, predefinedOrder[i])) {
                         aIndex = i;
                     }
-                    if (bIndex === -1 && (bNorm === predNorm || bNorm.indexOf(predNorm) !== -1 || predNorm.indexOf(bNorm) !== -1)) {
+                    if (bIndex === -1 && self.optionsMatch(b, predefinedOrder[i])) {
                         bIndex = i;
                     }
                 }
@@ -225,58 +311,30 @@
             var self = this;
             if (!option) return '';
             
-            var normalizedOption = self.normalizeText(option);
-            var MIN_PARTIAL_MATCH_LENGTH = 3; // Minimum length for partial matches
-            
             // First try exact match
             if (images[option]) {
                 return images[option];
             }
             
-            // Try normalized exact match in images
-            for (var key in images) {
-                if (images.hasOwnProperty(key) && images[key]) {
-                    var normalizedKey = self.normalizeText(key);
-                    if (normalizedKey === normalizedOption) {
-                        return images[key];
-                    }
-                }
-            }
-            
-            // Try partial match with images (contains match)
-            for (var key in images) {
-                if (images.hasOwnProperty(key) && images[key]) {
-                    var normalizedKey = self.normalizeText(key);
-                    if (normalizedKey.length >= MIN_PARTIAL_MATCH_LENGTH && normalizedOption.length >= MIN_PARTIAL_MATCH_LENGTH) {
-                        if (normalizedOption.indexOf(normalizedKey) !== -1 ||
-                            normalizedKey.indexOf(normalizedOption) !== -1) {
-                            return images[key];
-                        }
-                    }
-                }
-            }
-            
-            // Try matching with predefined options to find the corresponding image
+            // Try using the improved optionsMatch function against predefined options
+            // The images are keyed by predefined option names, so we need to find which predefined option matches
             for (var i = 0; i < predefinedOptions.length; i++) {
                 var predefined = predefinedOptions[i];
-                var normalizedPredefined = self.normalizeText(predefined);
                 
-                // Check if option matches this predefined option
-                if (normalizedOption === normalizedPredefined ||
-                    normalizedOption.indexOf(normalizedPredefined) !== -1 ||
-                    normalizedPredefined.indexOf(normalizedOption) !== -1) {
-                    // Found a match, now get the image for this predefined option
+                if (self.optionsMatch(option, predefined)) {
+                    // Found a matching predefined option, return its image
                     if (images[predefined]) {
                         return images[predefined];
                     }
-                    // Also try with index-based image key
-                    var imageIndex = i + 1;
-                    for (var imgKey in images) {
-                        if (images.hasOwnProperty(imgKey) && images[imgKey]) {
-                            if (self.normalizeText(imgKey) === normalizedPredefined) {
-                                return images[imgKey];
-                            }
-                        }
+                }
+            }
+            
+            // Fallback: try normalized match directly in images object
+            var normalizedOption = self.normalizeText(option);
+            for (var key in images) {
+                if (images.hasOwnProperty(key) && images[key]) {
+                    if (self.optionsMatch(option, key)) {
+                        return images[key];
                     }
                 }
             }
