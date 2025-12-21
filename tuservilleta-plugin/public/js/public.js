@@ -155,19 +155,84 @@
             });
         },
 
-        renderOptions: function(stepKey, $container, availableOptions) {
-            var html = '';
-            var allOptions = tuservilleta.step_options[stepKey];
-            var images = tuservilleta.images[stepKey] || {};
+        // Helper function to find matching image for an option
+        findImageForOption: function(option, images, predefinedOptions) {
+            if (!option) return '';
+            
+            var normalizedOption = option.toLowerCase().trim();
+            var MIN_MATCH_LENGTH = 5; // Minimum length for partial matches to avoid false positives
+            
+            // First try exact match
+            if (images[option]) {
+                return images[option];
+            }
+            
+            // Try normalized exact match in images
+            for (var key in images) {
+                if (images.hasOwnProperty(key)) {
+                    var normalizedKey = key.toLowerCase().trim();
+                    if (normalizedKey === normalizedOption) {
+                        return images[key];
+                    }
+                }
+            }
+            
+            // Try partial match (only if strings are long enough)
+            if (normalizedOption.length >= MIN_MATCH_LENGTH) {
+                for (var key in images) {
+                    if (images.hasOwnProperty(key)) {
+                        var normalizedKey = key.toLowerCase().trim();
+                        if (normalizedKey.length >= MIN_MATCH_LENGTH) {
+                            if (normalizedOption.indexOf(normalizedKey) !== -1 ||
+                                normalizedKey.indexOf(normalizedOption) !== -1) {
+                                return images[key];
+                            }
+                        }
+                    }
+                }
+            }
+            
+            // Try matching with predefined options
+            for (var i = 0; i < predefinedOptions.length; i++) {
+                var predefined = predefinedOptions[i];
+                var normalizedPredefined = predefined.toLowerCase().trim();
+                
+                // Exact normalized match
+                if (normalizedOption === normalizedPredefined) {
+                    if (images[predefined]) {
+                        return images[predefined];
+                    }
+                }
+                
+                // Partial match (only if strings are long enough)
+                if (normalizedOption.length >= MIN_MATCH_LENGTH && normalizedPredefined.length >= MIN_MATCH_LENGTH) {
+                    if (normalizedOption.indexOf(normalizedPredefined) !== -1 ||
+                        normalizedPredefined.indexOf(normalizedOption) !== -1) {
+                        if (images[predefined]) {
+                            return images[predefined];
+                        }
+                    }
+                }
+            }
+            
+            return '';
+        },
 
-            // Only show options that exist in the database
-            allOptions.forEach(function(option) {
-                // Check if option is available
-                if (availableOptions.indexOf(option) === -1) {
-                    return; // Skip unavailable options
+        renderOptions: function(stepKey, $container, availableOptions) {
+            var self = this;
+            var html = '';
+            var images = tuservilleta.images[stepKey] || {};
+            var predefinedOptions = tuservilleta.step_options[stepKey] || [];
+
+            // Show all available options from the database directly
+            availableOptions.forEach(function(option) {
+                if (!option || option.trim() === '') {
+                    return; // Skip empty options
                 }
 
-                var imageUrl = images[option] || '';
+                // Find matching image using flexible matching
+                var imageUrl = self.findImageForOption(option, images, predefinedOptions);
+
                 var imageHtml = imageUrl 
                     ? '<img src="' + imageUrl + '" alt="' + option + '">' 
                     : '<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>';
@@ -214,11 +279,11 @@
 
         renderQuantityOptions: function(availableOptions) {
             var $select = $('#quantity-select');
-            var allQuantities = tuservilleta.step_options.quantity;
             var html = '<option value="">Selecciona una cantidad</option>';
 
-            allQuantities.forEach(function(qty) {
-                if (availableOptions.indexOf(qty) !== -1) {
+            // Show all available options from the database directly
+            availableOptions.forEach(function(qty) {
+                if (qty && qty.trim() !== '') {
                     html += '<option value="' + qty + '">' + qty + '</option>';
                 }
             });

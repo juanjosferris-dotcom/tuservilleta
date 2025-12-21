@@ -99,8 +99,15 @@ class TuServilleta_Database {
             return array('success' => false, 'message' => 'El archivo está vacío');
         }
 
-        // Normalizar headers
-        $headers = array_map('strtolower', array_map('trim', $headers));
+        // Normalizar headers (quitar BOM UTF-8 y caracteres de control, mantener UTF-8 válido)
+        $headers = array_map(function($h) {
+            // Quitar BOM UTF-8 (0xEF 0xBB 0xBF) al inicio
+            $h = preg_replace('/^\xEF\xBB\xBF/', '', $h);
+            // Quitar caracteres de control (0x00-0x1F excepto tab, newline, etc.)
+            $h = preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F]/', '', $h);
+            return strtolower(trim($h));
+        }, $headers);
+        
         $expected = array('size', 'type', 'color', 'printing', 'quantity', 'price');
         
         foreach ($expected as $col) {
@@ -117,12 +124,36 @@ class TuServilleta_Database {
             $data = array();
             foreach ($headers as $index => $header) {
                 if (isset($row[$index])) {
-                    $data[$header] = trim($row[$index]);
+                    // Limpiar solo caracteres de control, mantener UTF-8 válido (acentos, etc.)
+                    $value = preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F]/', '', $row[$index]);
+                    $data[$header] = trim($value);
                 }
             }
 
-            // Convertir precio a número
-            $price = str_replace(',', '.', $data['price']);
+            // Saltar filas vacías
+            if (empty($data['size']) && empty($data['type'])) {
+                continue;
+            }
+
+            // Convertir precio a número (formato español: 1.234,56)
+            $price = $data['price'];
+            // Detectar si usa formato español (coma como decimal)
+            // En formato español: 1.234,56 -> la coma viene después de los puntos
+            // En formato inglés: 1,234.56 -> el punto viene después de las comas
+            if (strpos($price, ',') !== false) {
+                $lastComma = strrpos($price, ',');
+                $lastDot = strrpos($price, '.');
+                
+                if ($lastDot === false || $lastComma > $lastDot) {
+                    // Formato español: puntos son miles, coma es decimal
+                    $price = str_replace('.', '', $price);
+                    $price = str_replace(',', '.', $price);
+                } else {
+                    // Formato inglés: comas son miles, punto es decimal
+                    $price = str_replace(',', '', $price);
+                }
+            }
+            // Quitar cualquier caracter no numérico excepto punto decimal
             $price = preg_replace('/[^0-9.]/', '', $price);
 
             $wpdb->insert($table, array(
