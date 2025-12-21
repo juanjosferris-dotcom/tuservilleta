@@ -1,0 +1,254 @@
+/**
+ * Tuservilleta Form Plugin Styles
+ * Responsive and modern form styling
+ */
+
+/* Container */
+.tuservilleta-form-container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 30px;
+    background: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Form Title */
+.tuservilleta-form-title {
+    margin: 0 0 30px;
+    font-size: 28px;
+    font-weight: 600;
+    color: #333;
+    text-align: center;
+}
+
+/* Form */
+.tuservilleta-form {
+    width: 100%;
+}
+
+/* Form Row */
+.tuservilleta-form-row {
+    margin-bottom: 20px;
+}
+
+/* Form Field */
+.tuservilleta-form-field {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Labels */
+.tuservilleta-form-field label {
+    margin-bottom: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #555;
+}
+
+.tuservilleta-form-field label .required {
+    color: #e74c3c;
+    margin-left: 2px;
+}
+
+/* Input Fields */
+.tuservilleta-input,
+.tuservilleta-textarea {
+    width: 100%;
+    padding: 12px 15px;
+    font-size: 15px;
+    line-height: 1.5;
+    color: #333;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    transition: border-color 0.3s, box-shadow 0.3s;
+    box-sizing: border-box;
+}
+
+.tuservilleta-input:focus,
+.tuservilleta-textarea:focus {
+    outline: none;
+    border-color: #3498db;
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+.tuservilleta-textarea {
+    resize: vertical;
+    min-height: 120px;
+    font-family: inherit;
+}
+
+/* Input States */
+.tuservilleta-input.error,
+.tuservilleta-textarea.error {
+    border-color: #e74c3c;
+}
+
+.tuservilleta-input.error:focus,
+.tuservilleta-textarea.error:focus {
+    box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.1);
+}
+
+.tuservilleta-input.success,
+.tuservilleta-textarea.success {
+    border-color: #27ae60;
+}
+
+/* Error Messages */
+.tuservilleta-error-message {
+    display: none;
+    margin-top: 5px;
+    font-size: 13px;
+    color: #e74c3c;
+}
+
+.tuservilleta-error-message.show {
+    display: block;
+}
+
+/* Submit Button */
+.tuservilleta-submit-btn {
+    width: 100%;
+    padding: 14px 30px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #fff;
+    background-color: #3498db;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.1s;
+}
+
+.tuservilleta-submit-btn:hover {
+    background-color: #2980b9;
+}
+
+.tuservilleta-submit-btn:active {
+    transform: scale(0.98);
+}
+
+.tuservilleta-submit-btn:disabled {
+    background-color: #95a5a6;
+    cursor: not-allowed;
+}
+
+/* Loading State */
+.tuservilleta-submit-btn.loading {
+    position: relative;
+    color: transparent;
+}
+
+.tuservilleta-submit-btn.loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    margin: -10px 0 0 -10px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: tuservilleta-spin 0.6s linear infinite;
+}
+
+@keyframes tuservilleta-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Success/Error Messages */
+.tuservilleta-form-message {
+    padding: 15px 20px;
+    margin-bottom: 20px;
+    border-radius: 4px;
+    font-size: 15px;
+}
+
+.tuservilleta-form-success {
+    color: #27ae60;
+    background-color: #d5f4e6;
+    border: 1px solid #27ae60;
+}
+
+.tuservilleta-form-error {
+    color: #e74c3c;
+    background-color: #fadbd8;
+    border: 1px solid #e74c3c;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .tuservilleta-form-container {
+        padding: 20px;
+        margin: 0 15px;
+    }
+    
+    .tuservilleta-form-title {
+        font-size: 24px;
+        margin-bottom: 20px;
+    }
+    
+    .tuservilleta-input,
+    .tuservilleta-textarea {
+        font-size: 16px; /* Prevents zoom on iOS */
+    }
+}
+
+@media (max-width: 480px) {
+    .tuservilleta-form-container {
+        padding: 15px;
+    }
+    
+    .tuservilleta-form-title {
+        font-size: 20px;
+    }
+    
+    .tuservilleta-form-row {
+        margin-bottom: 15px;
+    }
+    
+    .tuservilleta-submit-btn {
+        padding: 12px 24px;
+        font-size: 15px;
+    }
+}
+
+/* Accessibility Improvements */
+.tuservilleta-input:focus-visible,
+.tuservilleta-textarea:focus-visible,
+.tuservilleta-submit-btn:focus-visible {
+    outline: 2px solid #3498db;
+    outline-offset: 2px;
+}
+
+/* Dark Mode Support (Optional) */
+@media (prefers-color-scheme: dark) {
+    .tuservilleta-form-container {
+        background: #2c3e50;
+        color: #ecf0f1;
+    }
+    
+    .tuservilleta-form-title {
+        color: #ecf0f1;
+    }
+    
+    .tuservilleta-form-field label {
+        color: #bdc3c7;
+    }
+    
+    .tuservilleta-input,
+    .tuservilleta-textarea {
+        background-color: #34495e;
+        border-color: #4a5f7f;
+        color: #ecf0f1;
+    }
+    
+    .tuservilleta-input:focus,
+    .tuservilleta-textarea:focus {
+        border-color: #3498db;
+    }
+}
