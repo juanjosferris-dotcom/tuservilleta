@@ -28,6 +28,10 @@
 #tuservilleta-selection{list-style:none;padding:0;margin:0;}
 #tuservilleta-selection li{padding:8px 0;border-bottom:1px solid rgba(226,232,240,.25);}
 .summary-price{font-size:26px;font-weight:800;margin-top:10px;}
+.price-breakdown{display:grid;gap:6px;font-size:16px;font-weight:600;}
+.price-breakdown .row{display:flex;justify-content:space-between;gap:12px;}
+.price-breakdown .row span{color:#cbd5e1;font-weight:500;}
+.price-breakdown .total{border-top:1px solid rgba(226,232,240,.25);padding-top:8px;}
 .contact-fields input,.contact-fields textarea{width:100%;padding:10px 12px;margin-bottom:10px;border:1px solid #1e293b;border-radius:12px;background:#0f172a;color:#e2e8f0;}
 .contact-fields input:focus,.contact-fields textarea:focus{outline:2px solid #94a3b8;}
 .action-buttons{display:flex;gap:12px;flex-wrap:wrap;margin-top:10px;}

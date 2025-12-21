@@ -58,6 +58,7 @@ class Tuservilleta_Plugin {
 					'accent_color'       => '#0f172a',
 					'stripe_link'        => '',
 					'step_images'        => array(),
+					'option_images'      => array(),
 				),
 			)
 		);
@@ -73,6 +74,22 @@ class Tuservilleta_Plugin {
 		$output['accent_color']     = isset( $input['accent_color'] ) ? sanitize_hex_color( $input['accent_color'] ) : '#0f172a';
 		$output['stripe_link']      = isset( $input['stripe_link'] ) ? esc_url_raw( $input['stripe_link'] ) : '';
 		$output['step_images']      = isset( $input['step_images'] ) && is_array( $input['step_images'] ) ? array_map( 'esc_url_raw', $input['step_images'] ) : array();
+		$output['option_images']    = array();
+		if ( isset( $input['option_images'] ) && is_array( $input['option_images'] ) ) {
+			foreach ( $input['option_images'] as $step => $map ) {
+				if ( ! is_array( $map ) ) {
+					continue;
+				}
+				$output['option_images'][ $step ] = array();
+				foreach ( $map as $key => $url ) {
+					$sanitized_key = sanitize_text_field( $key );
+					$sanitized_url = esc_url_raw( $url );
+					if ( $sanitized_key && $sanitized_url ) {
+						$output['option_images'][ $step ][ $sanitized_key ] = $sanitized_url;
+					}
+				}
+			}
+		}
 
 		return $output;
 	}
@@ -188,13 +205,28 @@ class Tuservilleta_Plugin {
 							);
 							foreach ( $step_keys as $key => $label ) :
 								$current = isset( $settings['step_images'][ $key ] ) ? $settings['step_images'][ $key ] : '';
+								$option_map = isset( $settings['option_images'][ $key ] ) ? $settings['option_images'][ $key ] : array();
 								?>
 								<tr>
 									<th scope="row"><?php echo esc_html( $label ); ?></th>
 									<td>
+										<p style="margin-bottom:8px;"><strong><?php esc_html_e( 'Imagen por defecto del paso', 'tuservilleta' ); ?></strong></p>
 										<input type="file" name="step_image_<?php echo esc_attr( $key ); ?>" accept="image/*" />
 										<?php if ( $current ) : ?>
 											<p><img src="<?php echo esc_url( $current ); ?>" alt="" style="max-width:120px;height:auto;border-radius:8px;" /></p>
+										<?php endif; ?>
+										<?php if ( 'image' !== $key ) : ?>
+											<p style="margin-top:14px;margin-bottom:4px;"><strong><?php esc_html_e( 'Imágenes por opción', 'tuservilleta' ); ?></strong></p>
+											<textarea name="option_images_<?php echo esc_attr( $key ); ?>" rows="5" cols="60" placeholder="<?php esc_attr_e( 'Valor|https://ejemplo.com/imagen.jpg (una por línea)', 'tuservilleta' ); ?>"><?php
+											if ( ! empty( $option_map ) ) {
+												$lines = array();
+												foreach ( $option_map as $opt => $url ) {
+													$lines[] = $opt . '|' . $url;
+												}
+												echo esc_textarea( implode( "\n", $lines ) );
+											}
+											?></textarea>
+											<p class="description"><?php esc_html_e( 'Pon cada opción detectada en el CSV y su URL de imagen. Usa la biblioteca de medios y pega la URL. Se usarán solo las opciones presentes en el CSV.', 'tuservilleta' ); ?></p>
 										<?php endif; ?>
 									</td>
 								</tr>
@@ -271,6 +303,7 @@ class Tuservilleta_Plugin {
 
 		$settings             = get_option( self::OPTION_SETTINGS, array() );
 		$settings['step_images'] = isset( $settings['step_images'] ) && is_array( $settings['step_images'] ) ? $settings['step_images'] : array();
+		$settings['option_images'] = isset( $settings['option_images'] ) && is_array( $settings['option_images'] ) ? $settings['option_images'] : array();
 
 		$step_keys = array( 'size', 'type', 'color', 'quantity', 'printing', 'image' );
 		foreach ( $step_keys as $key ) {
@@ -297,6 +330,34 @@ class Tuservilleta_Plugin {
 
 			if ( isset( $uploaded['url'] ) && empty( $uploaded['error'] ) ) {
 				$settings['step_images'][ $key ] = esc_url_raw( $uploaded['url'] );
+			}
+		}
+
+		// Mapas de imágenes por opción (valor|url por línea).
+		$option_steps = array( 'size', 'type', 'color', 'quantity', 'printing' );
+		foreach ( $option_steps as $step ) {
+			$field = 'option_images_' . $step;
+			$settings['option_images'][ $step ] = array();
+			if ( empty( $_POST[ $field ] ) ) {
+				continue;
+			}
+			$lines = preg_split( '/\r\n|\r|\n/', wp_unslash( $_POST[ $field ] ) );
+			if ( ! is_array( $lines ) ) {
+				continue;
+			}
+			foreach ( $lines as $line ) {
+				if ( ! $line ) {
+					continue;
+				}
+				$parts = explode( '|', $line, 2 );
+				if ( count( $parts ) < 2 ) {
+					continue;
+				}
+				$opt = sanitize_text_field( $parts[0] );
+				$url = esc_url_raw( trim( $parts[1] ) );
+				if ( $opt && $url ) {
+					$settings['option_images'][ $step ][ $opt ] = $url;
+				}
 			}
 		}
 
@@ -358,6 +419,7 @@ class Tuservilleta_Plugin {
 					'selectOptionsFirst'   => __( 'Selecciona todas las opciones para calcular el precio.', 'tuservilleta' ),
 				),
 				'stepImages' => isset( $settings['step_images'] ) ? $settings['step_images'] : array(),
+				'optionImages' => isset( $settings['option_images'] ) ? $settings['option_images'] : array(),
 			)
 		);
 

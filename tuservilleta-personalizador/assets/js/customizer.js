@@ -13,9 +13,25 @@
 
 	const catalog = data.catalog || [];
 	const settings = data.settings || {};
+	const optionImages = data.optionImages || {};
 	const priceIndex = new Map();
 	const sanitizeText = (value) => String(value ?? '').replace(/[<>]/g, '');
 	const normalize = (value) => String(value ?? '').trim();
+	const normalizeKey = (value) => normalize(value).toLowerCase();
+	const IVA_RATE = 0.21;
+
+	function getOptionImage(stepKey, optionValue, fallback) {
+		const map = optionImages[stepKey] || {};
+		const targetKey = normalizeKey(optionValue);
+		for (const opt in map) {
+			if (Object.prototype.hasOwnProperty.call(map, opt)) {
+				if (normalizeKey(opt) === targetKey) {
+					return map[opt];
+				}
+			}
+		}
+		return fallback || null;
+	}
 
 	const state = {
 		currentStep: 0,
@@ -28,6 +44,7 @@
 			image: null,
 		},
 		price: null,
+		total: null,
 	};
 
 	const stepsContainer = document.getElementById('tuservilleta-steps');
@@ -164,7 +181,7 @@
 			const card = document.createElement('div');
 			card.className = 'tuservilleta-card';
 			if (String(state.selections[step.key]) === String(option)) card.classList.add('selected');
-			const img = stepImages[step.key];
+			const img = getOptionImage(step.key, option, stepImages[step.key]);
 			const label = sanitizeText(String(option));
 			card.innerHTML = `
 				${img ? `<div class="thumb" style="background-image:url('${img}')"></div>` : ''}
@@ -234,9 +251,21 @@
 
 		computePrice();
 		if (state.price !== null && !isNaN(state.price)) {
-			priceNode.textContent = formatter.format(state.price);
+			const subtotal = state.price;
+			const iva = subtotal * IVA_RATE;
+			const total = subtotal + iva;
+			state.total = total;
+			priceNode.innerHTML = `
+				<div class="price-breakdown">
+					<div class="row"><span>Precio sin IVA:</span><strong>${formatter.format(subtotal)}</strong></div>
+					<div class="row"><span>Gastos de envío:</span><strong>GRATIS</strong></div>
+					<div class="row"><span>IVA (21%):</span><strong>${formatter.format(iva)}</strong></div>
+					<div class="row total"><span>Total (IVA incl.):</span><strong>${formatter.format(total)}</strong></div>
+				</div>
+			`;
 			payBtn?.removeAttribute('disabled');
 		} else {
+			state.total = null;
 			priceNode.textContent = data.strings?.priceNotFound || 'No hay coincidencias';
 			payBtn?.setAttribute('disabled', 'disabled');
 		}
@@ -254,8 +283,9 @@
 			.map((s) => `${s.label}: ${sanitizeText(state.selections[s.key] || '-')}`)
 			.join(' | ');
 		itemNameField.value = description || 'Personalización';
-		if (state.price !== null && !isNaN(state.price)) {
-			amountField.value = state.price.toFixed(2);
+		const base = state.total ?? state.price;
+		if (base !== null && !isNaN(base)) {
+			amountField.value = base.toFixed(2);
 		}
 	}
 
@@ -284,7 +314,7 @@
 					return;
 				}
 				if (settings.stripe_link) {
-					const amount = state.price.toFixed(2);
+					const amount = (state.total ?? state.price).toFixed(2);
 					const link = settings.stripe_link.replace('{amount}', amount);
 					window.open(link, '_blank');
 					return;
@@ -314,7 +344,7 @@
 		const selections = { ...state.selections };
 		const payload = {
 			selections,
-			price: state.price ? formatter.format(state.price) : null,
+			price: state.total ? formatter.format(state.total) : state.price ? formatter.format(state.price) : null,
 		};
 
 		const form = new FormData();
