@@ -20,6 +20,71 @@
             this.loadStep(1);
         },
 
+        // Helper function to normalize text for comparison (remove punctuation, extra spaces, lowercase)
+        normalizeText: function(text) {
+            if (!text) return '';
+            return text.toLowerCase()
+                .trim()
+                .replace(/[.,;:()]/g, '') // Remove punctuation
+                .replace(/\s+/g, ' ')      // Normalize spaces
+                .trim();
+        },
+
+        // Helper function to sort options based on predefined order
+        sortOptions: function(options, stepKey) {
+            var self = this;
+            var predefinedOrder = tuservilleta.step_options[stepKey] || [];
+            
+            if (predefinedOrder.length === 0) {
+                return options;
+            }
+
+            // Create normalized versions for matching
+            var predefinedNormalized = predefinedOrder.map(function(opt) {
+                return self.normalizeText(opt);
+            });
+
+            // Sort options based on predefined order
+            return options.slice().sort(function(a, b) {
+                var aNorm = self.normalizeText(a);
+                var bNorm = self.normalizeText(b);
+
+                // Find position in predefined order (use partial matching)
+                var aIndex = -1;
+                var bIndex = -1;
+
+                for (var i = 0; i < predefinedNormalized.length; i++) {
+                    var predNorm = predefinedNormalized[i];
+                    if (aIndex === -1 && (aNorm === predNorm || aNorm.indexOf(predNorm) !== -1 || predNorm.indexOf(aNorm) !== -1)) {
+                        aIndex = i;
+                    }
+                    if (bIndex === -1 && (bNorm === predNorm || bNorm.indexOf(predNorm) !== -1 || predNorm.indexOf(bNorm) !== -1)) {
+                        bIndex = i;
+                    }
+                }
+
+                // If both found in predefined, use that order
+                if (aIndex !== -1 && bIndex !== -1) {
+                    return aIndex - bIndex;
+                }
+                // If only one found, prioritize it
+                if (aIndex !== -1) return -1;
+                if (bIndex !== -1) return 1;
+                // Otherwise alphabetical
+                return a.localeCompare(b);
+            });
+        },
+
+        // Helper function to sort quantity options numerically
+        sortQuantities: function(options) {
+            return options.slice().sort(function(a, b) {
+                // Extract numeric value from strings like "250 uds.", "1.000 uds."
+                var aNum = parseInt(a.replace(/\./g, '').replace(/[^\d]/g, ''), 10) || 0;
+                var bNum = parseInt(b.replace(/\./g, '').replace(/[^\d]/g, ''), 10) || 0;
+                return aNum - bNum;
+            });
+        },
+
         bindEvents: function() {
             var self = this;
 
@@ -157,10 +222,11 @@
 
         // Helper function to find matching image for an option
         findImageForOption: function(option, images, predefinedOptions) {
+            var self = this;
             if (!option) return '';
             
-            var normalizedOption = option.toLowerCase().trim();
-            var MIN_MATCH_LENGTH = 5; // Minimum length for partial matches to avoid false positives
+            var normalizedOption = self.normalizeText(option);
+            var MIN_PARTIAL_MATCH_LENGTH = 3; // Minimum length for partial matches
             
             // First try exact match
             if (images[option]) {
@@ -169,47 +235,47 @@
             
             // Try normalized exact match in images
             for (var key in images) {
-                if (images.hasOwnProperty(key)) {
-                    var normalizedKey = key.toLowerCase().trim();
+                if (images.hasOwnProperty(key) && images[key]) {
+                    var normalizedKey = self.normalizeText(key);
                     if (normalizedKey === normalizedOption) {
                         return images[key];
                     }
                 }
             }
             
-            // Try partial match (only if strings are long enough)
-            if (normalizedOption.length >= MIN_MATCH_LENGTH) {
-                for (var key in images) {
-                    if (images.hasOwnProperty(key)) {
-                        var normalizedKey = key.toLowerCase().trim();
-                        if (normalizedKey.length >= MIN_MATCH_LENGTH) {
-                            if (normalizedOption.indexOf(normalizedKey) !== -1 ||
-                                normalizedKey.indexOf(normalizedOption) !== -1) {
-                                return images[key];
-                            }
+            // Try partial match with images (contains match)
+            for (var key in images) {
+                if (images.hasOwnProperty(key) && images[key]) {
+                    var normalizedKey = self.normalizeText(key);
+                    if (normalizedKey.length >= MIN_PARTIAL_MATCH_LENGTH && normalizedOption.length >= MIN_PARTIAL_MATCH_LENGTH) {
+                        if (normalizedOption.indexOf(normalizedKey) !== -1 ||
+                            normalizedKey.indexOf(normalizedOption) !== -1) {
+                            return images[key];
                         }
                     }
                 }
             }
             
-            // Try matching with predefined options
+            // Try matching with predefined options to find the corresponding image
             for (var i = 0; i < predefinedOptions.length; i++) {
                 var predefined = predefinedOptions[i];
-                var normalizedPredefined = predefined.toLowerCase().trim();
+                var normalizedPredefined = self.normalizeText(predefined);
                 
-                // Exact normalized match
-                if (normalizedOption === normalizedPredefined) {
+                // Check if option matches this predefined option
+                if (normalizedOption === normalizedPredefined ||
+                    normalizedOption.indexOf(normalizedPredefined) !== -1 ||
+                    normalizedPredefined.indexOf(normalizedOption) !== -1) {
+                    // Found a match, now get the image for this predefined option
                     if (images[predefined]) {
                         return images[predefined];
                     }
-                }
-                
-                // Partial match (only if strings are long enough)
-                if (normalizedOption.length >= MIN_MATCH_LENGTH && normalizedPredefined.length >= MIN_MATCH_LENGTH) {
-                    if (normalizedOption.indexOf(normalizedPredefined) !== -1 ||
-                        normalizedPredefined.indexOf(normalizedOption) !== -1) {
-                        if (images[predefined]) {
-                            return images[predefined];
+                    // Also try with index-based image key
+                    var imageIndex = i + 1;
+                    for (var imgKey in images) {
+                        if (images.hasOwnProperty(imgKey) && images[imgKey]) {
+                            if (self.normalizeText(imgKey) === normalizedPredefined) {
+                                return images[imgKey];
+                            }
                         }
                     }
                 }
@@ -223,9 +289,12 @@
             var html = '';
             var images = tuservilleta.images[stepKey] || {};
             var predefinedOptions = tuservilleta.step_options[stepKey] || [];
+            
+            // Sort options based on predefined order
+            var sortedOptions = self.sortOptions(availableOptions, stepKey);
 
-            // Show all available options from the database directly
-            availableOptions.forEach(function(option) {
+            // Show all available options from the database directly (sorted)
+            sortedOptions.forEach(function(option) {
                 if (!option || option.trim() === '') {
                     return; // Skip empty options
                 }
@@ -278,11 +347,15 @@
         },
 
         renderQuantityOptions: function(availableOptions) {
+            var self = this;
             var $select = $('#quantity-select');
             var html = '<option value="">Selecciona una cantidad</option>';
 
-            // Show all available options from the database directly
-            availableOptions.forEach(function(qty) {
+            // Sort quantities numerically (from lowest to highest)
+            var sortedQuantities = self.sortQuantities(availableOptions);
+
+            // Show all available options from the database directly (sorted)
+            sortedQuantities.forEach(function(qty) {
                 if (qty && qty.trim() !== '') {
                     html += '<option value="' + qty + '">' + qty + '</option>';
                 }
