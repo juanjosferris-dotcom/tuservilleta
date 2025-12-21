@@ -1,0 +1,48 @@
+.tuservilleta-wizard{font-family:"Inter",system-ui,-apple-system,sans-serif;color:#0f172a;background:#f8fafc;border:1px solid #e5e7eb;border-radius:20px;padding:28px 28px 34px;box-shadow:0 16px 50px rgba(12,23,42,0.08);}
+.tuservilleta-header{display:flex;justify-content:space-between;gap:20px;align-items:flex-start;margin-bottom:18px;}
+.tuservilleta-header h2{margin:6px 0 4px;font-size:26px;}
+.tuservilleta-header .sub{color:#475569;margin:0;}
+.tuservilleta-header .eyebrow{letter-spacing:.08em;text-transform:uppercase;font-size:12px;margin:0;color:#94a3b8;}
+.tuservilleta-header .pill{background:#0f172a;color:#fff;border-radius:999px;padding:10px 14px;font-weight:600;font-size:13px;align-self:center;box-shadow:0 10px 30px rgba(15,23,42,.25);}
+
+.tuservilleta-progress{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin:12px 0 18px;}
+.tuservilleta-progress .step{background:#e2e8f0;border-radius:10px;padding:10px 12px;display:flex;align-items:center;gap:10px;cursor:pointer;transition:all .18s ease;border:1px solid transparent;}
+.tuservilleta-progress .step.active{background:#0f172a;color:#fff;box-shadow:0 10px 25px rgba(15,23,42,.25);}
+.tuservilleta-progress .step.completed{border-color:#0f172a;color:#0f172a;background:#fff;}
+.tuservilleta-progress .badge{width:26px;height:26px;border-radius:8px;background:#fff;color:#0f172a;display:flex;align-items:center;justify-content:center;font-weight:700;}
+.tuservilleta-progress .step.active .badge{background:rgba(255,255,255,.12);color:#fff;}
+
+#tuservilleta-steps{background:#fff;border:1px solid #e2e8f0;border-radius:16px;padding:18px;box-shadow:0 10px 30px rgba(0,0,0,.03);}
+.tuservilleta-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;}
+.tuservilleta-card{border:1px solid #e2e8f0;border-radius:14px;padding:16px;background:#f8fafc;cursor:pointer;transition:all .18s ease;min-height:140px;display:flex;flex-direction:column;justify-content:flex-end;position:relative;overflow:hidden;}
+.tuservilleta-card .thumb{position:absolute;inset:0;opacity:0.18;background-size:cover;background-position:center;}
+.tuservilleta-card .content{position:relative;z-index:2;}
+.tuservilleta-card:hover{transform:translateY(-2px);box-shadow:0 16px 30px rgba(12,23,42,.08);}
+.tuservilleta-card .title{font-weight:700;margin-bottom:8px;}
+.tuservilleta-card .caption{color:#475569;font-size:13px;margin:0;}
+.tuservilleta-card.selected{border-color:#0f172a;background:#0f172a;color:#fff;box-shadow:0 16px 30px rgba(15,23,42,.18);}
+
+.tuservilleta-summary{margin-top:20px;background:#0b1324;color:#e2e8f0;padding:22px;border-radius:18px;}
+.tuservilleta-summary h3{margin:0 0 10px;}
+.summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:24px;align-items:start;}
+#tuservilleta-selection{list-style:none;padding:0;margin:0;}
+#tuservilleta-selection li{padding:8px 0;border-bottom:1px solid rgba(226,232,240,.25);}
+.summary-price{font-size:26px;font-weight:800;margin-top:10px;}
+.price-breakdown{display:grid;gap:6px;font-size:16px;font-weight:600;}
+.price-breakdown .row{display:flex;justify-content:space-between;gap:12px;}
+.price-breakdown .row span{color:#cbd5e1;font-weight:500;}
+.price-breakdown .total{border-top:1px solid rgba(226,232,240,.25);padding-top:8px;}
+.contact-fields input,.contact-fields textarea{width:100%;padding:10px 12px;margin-bottom:10px;border:1px solid #1e293b;border-radius:12px;background:#0f172a;color:#e2e8f0;}
+.contact-fields input:focus,.contact-fields textarea:focus{outline:2px solid #94a3b8;}
+.action-buttons{display:flex;gap:12px;flex-wrap:wrap;margin-top:10px;}
+.btn{border:none;border-radius:12px;padding:12px 18px;font-weight:700;cursor:pointer;transition:all .18s ease;}
+.btn.primary{background:#e0b973;color:#0f172a;box-shadow:0 12px 24px rgba(224,185,115,.32);}
+.btn.primary:disabled{opacity:.6;cursor:not-allowed;}
+.btn.ghost{background:transparent;border:1px solid #e2e8f0;color:#e2e8f0;}
+.btn:hover{transform:translateY(-1px);}
+.muted{color:#cbd5e1;font-size:13px;margin-top:6px;}
+
+@media (max-width:820px){
+	.tuservilleta-header{flex-direction:column;}
+	.tuservilleta-progress{grid-template-columns:repeat(auto-fit,minmax(130px,1fr));}
+}
