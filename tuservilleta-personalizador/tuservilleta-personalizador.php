@@ -236,7 +236,7 @@ class Tuservilleta_Plugin {
 
 		$rows = array();
 		if ( ( $handle = fopen( $file, 'r' ) ) ) {
-			while ( ( $data = fgetcsv( $handle, 8192, ';' ) ) !== false ) {
+			while ( ( $data = fgetcsv( $handle, 8192, ';', '"', '\\' ) ) !== false ) {
 				if ( count( $data ) < 6 ) {
 					continue;
 				}
