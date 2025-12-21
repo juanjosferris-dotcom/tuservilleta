@@ -13,6 +13,8 @@
 
 	const catalog = data.catalog || [];
 	const settings = data.settings || {};
+	const priceIndex = new Map();
+	const sanitizeText = (value) => String(value ?? '').replace(/[<>]/g, '');
 
 	const state = {
 		currentStep: 0,
@@ -39,8 +41,16 @@
 	const amountField = document.getElementById('tuservilleta-amount');
 	const itemNameField = document.getElementById('tuservilleta-item-name');
 
-	const currency = settings.currency || 'EUR';
-	const formatter = new Intl.NumberFormat('es-ES', { style: 'currency', currency });
+	function createFormatter() {
+		try {
+			const currency = settings.currency || 'EUR';
+			return new Intl.NumberFormat('es-ES', { style: 'currency', currency });
+		} catch (e) {
+			return new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' });
+		}
+	}
+
+	const formatter = createFormatter();
 
 	function setAccent() {
 		if (settings.accent_color) {
@@ -120,7 +130,7 @@
 				card.addEventListener('click', () => {
 					const mode = card.getAttribute('data-image');
 					if (mode === 'upload') {
-						state.selections.image = imageInput?.files?.[0]?.name || 'Adjuntaré ahora';
+						state.selections.image = null;
 						imageInput?.click();
 					} else {
 						state.selections.image = 'Enviaré más tarde';
@@ -159,21 +169,29 @@
 		});
 	}
 
+	function buildPriceIndex() {
+		catalog.forEach((row) => {
+			const key = [
+				row.size,
+				row.type,
+				row.color,
+				row.quantity,
+				row.printing,
+			]
+				.map((v) => String(v))
+				.join('|');
+			priceIndex.set(key, parseFloat(row.price));
+		});
+	}
+
 	function computePrice() {
 		const { size, type, color, quantity, printing } = state.selections;
 		if (!size || !type || !color || !quantity || !printing) {
 			state.price = null;
 			return;
 		}
-		const match = catalog.find(
-			(row) =>
-				String(row.size) === String(size) &&
-				String(row.type) === String(type) &&
-				String(row.color) === String(color) &&
-				String(row.quantity) === String(quantity) &&
-				String(row.printing) === String(printing)
-		);
-		state.price = match ? parseFloat(match.price) : null;
+		const key = [size, type, color, quantity, printing].map((v) => String(v)).join('|');
+		state.price = priceIndex.get(key) ?? null;
 	}
 
 	function updateSummary() {
@@ -184,13 +202,19 @@
 			if (step.key === 'image') return;
 			const value = state.selections[step.key] || '—';
 			const li = document.createElement('li');
-			li.innerHTML = `<strong>${step.label}:</strong> ${value}`;
+			const strong = document.createElement('strong');
+			strong.textContent = `${step.label}:`;
+			li.appendChild(strong);
+			li.appendChild(document.createTextNode(` ${value}`));
 			selectionList.appendChild(li);
 		});
 
 		if (state.selections.image) {
 			const li = document.createElement('li');
-			li.innerHTML = `<strong>Imagen:</strong> ${state.selections.image}`;
+			const strong = document.createElement('strong');
+			strong.textContent = 'Imagen:';
+			li.appendChild(strong);
+			li.appendChild(document.createTextNode(` ${state.selections.image}`));
 			selectionList.appendChild(li);
 		}
 
@@ -214,7 +238,7 @@
 		}
 		const description = steps
 			.filter((s) => s.key !== 'image')
-			.map((s) => `${s.label}: ${state.selections[s.key] || '-'}`)
+			.map((s) => `${s.label}: ${sanitizeText(state.selections[s.key] || '-')}`)
 			.join(' | ');
 		itemNameField.value = description || 'Personalización';
 		if (state.price !== null && !isNaN(state.price)) {
@@ -228,6 +252,9 @@
 			if (imageInput.files && imageInput.files[0]) {
 				state.selections.image = imageInput.files[0].name;
 				updateSummary();
+			} else {
+				state.selections.image = null;
+				updateSummary();
 			}
 		});
 	}
@@ -240,11 +267,11 @@
 			payBtn.addEventListener('click', (e) => {
 				e.preventDefault();
 				if (!settings.paypal_business) {
-					messageNode.textContent = 'Configura tu cuenta PayPal en el panel de administración.';
+					messageNode.textContent = data.strings?.paymentConfigMissing || 'Configura tu cuenta PayPal en el panel de administración.';
 					return;
 				}
 				if (!state.price) {
-					messageNode.textContent = 'Selecciona todas las opciones para calcular el precio.';
+					messageNode.textContent = data.strings?.selectOptionsFirst || 'Selecciona todas las opciones para calcular el precio.';
 					return;
 				}
 				paypalForm?.submit();
@@ -362,6 +389,7 @@
 	}
 
 	function init() {
+		buildPriceIndex();
 		setAccent();
 		if (!catalog.length) {
 			renderEmptyCatalog();

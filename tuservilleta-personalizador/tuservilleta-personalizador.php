@@ -15,6 +15,7 @@ class Tuservilleta_Plugin {
 	const OPTION_CATALOG  = 'tuservilleta_catalog';
 	const OPTION_SETTINGS = 'tuservilleta_settings';
 	const VERSION         = '1.0.0';
+	const MAX_UPLOAD_SIZE = 5242880; // 5MB
 
 	public function __construct() {
 		add_action( 'admin_menu', array( $this, 'register_menu' ) );
@@ -163,11 +164,18 @@ class Tuservilleta_Plugin {
 			exit;
 		}
 
-		$file = wp_unslash( $_FILES['catalog_csv']['tmp_name'] );
+		$file     = $_FILES['catalog_csv']['tmp_name'];
+		$filename = isset( $_FILES['catalog_csv']['name'] ) ? sanitize_file_name( wp_unslash( $_FILES['catalog_csv']['name'] ) ) : '';
+
+		$filetype = wp_check_filetype_and_ext( $file, $filename );
+		if ( isset( $filetype['ext'] ) && 'csv' !== $filetype['ext'] ) {
+			wp_safe_redirect( add_query_arg( 'tuservilleta', 'invalid_csv', admin_url( 'admin.php?page=tuservilleta' ) ) );
+			exit;
+		}
 
 		$rows = array();
 		if ( ( $handle = fopen( $file, 'r' ) ) ) {
-			while ( ( $data = fgetcsv( $handle, 1000, ';' ) ) !== false ) {
+			while ( ( $data = fgetcsv( $handle, 8192, ';' ) ) !== false ) {
 				if ( count( $data ) < 6 ) {
 					continue;
 				}
@@ -238,6 +246,8 @@ class Tuservilleta_Plugin {
 					'priceNotFound'  => __( 'No hay coincidencias con el catálogo actual.', 'tuservilleta' ),
 					'sendToCompany'  => __( 'Enviar a la empresa', 'tuservilleta' ),
 					'payNow'         => __( 'Pagar ahora', 'tuservilleta' ),
+					'paymentConfigMissing' => __( 'Configura tu cuenta PayPal en el panel de administración.', 'tuservilleta' ),
+					'selectOptionsFirst'   => __( 'Selecciona todas las opciones para calcular el precio.', 'tuservilleta' ),
 				),
 			)
 		);
@@ -312,7 +322,21 @@ class Tuservilleta_Plugin {
 		$email  = isset( $_POST['email'] ) ? sanitize_email( wp_unslash( $_POST['email'] ) ) : '';
 		$phone  = isset( $_POST['phone'] ) ? sanitize_text_field( wp_unslash( $_POST['phone'] ) ) : '';
 		$notes  = isset( $_POST['notes'] ) ? sanitize_textarea_field( wp_unslash( $_POST['notes'] ) ) : '';
-		$payload = isset( $_POST['payload'] ) ? json_decode( wp_unslash( $_POST['payload'] ), true ) : array();
+		$payload_raw = isset( $_POST['payload'] ) ? wp_unslash( $_POST['payload'] ) : '';
+		$payload     = json_decode( $payload_raw, true );
+
+		if ( ! is_array( $payload ) ) {
+			wp_send_json_error( array( 'message' => __( 'Datos inválidos.', 'tuservilleta' ) ), 400 );
+		}
+
+		if ( isset( $payload['selections'] ) && is_array( $payload['selections'] ) ) {
+			$payload['selections'] = array_map(
+				static function ( $value ) {
+					return is_scalar( $value ) ? sanitize_text_field( $value ) : '';
+				},
+				$payload['selections']
+			);
+		}
 
 		if ( empty( $name ) || empty( $email ) ) {
 			wp_send_json_error( array( 'message' => __( 'Nombre y email son obligatorios.', 'tuservilleta' ) ), 400 );
@@ -344,6 +368,10 @@ class Tuservilleta_Plugin {
 		$attachments = array();
 
 		if ( ! empty( $_FILES['image'] ) && ! empty( $_FILES['image']['tmp_name'] ) ) {
+			if ( ! empty( $_FILES['image']['size'] ) && (int) $_FILES['image']['size'] > self::MAX_UPLOAD_SIZE ) {
+				wp_send_json_error( array( 'message' => __( 'La imagen supera el límite de 5MB.', 'tuservilleta' ) ), 400 );
+			}
+
 			require_once ABSPATH . 'wp-admin/includes/file.php';
 			$uploaded = wp_handle_upload(
 				$_FILES['image'],
@@ -360,10 +388,15 @@ class Tuservilleta_Plugin {
 
 			if ( ! isset( $uploaded['error'] ) && isset( $uploaded['file'] ) ) {
 				$attachments[] = $uploaded['file'];
+			} elseif ( isset( $uploaded['error'] ) && $uploaded['error'] ) {
+				wp_send_json_error( array( 'message' => esc_html( $uploaded['error'] ) ), 400 );
 			}
 		}
 
-		wp_mail( $to, 'Nuevo pedido de servilletas/posavasos', $body, $headers, $attachments );
+		$sent = wp_mail( $to, 'Nuevo pedido de servilletas/posavasos', $body, $headers, $attachments );
+		if ( ! $sent ) {
+			wp_send_json_error( array( 'message' => __( 'No se pudo enviar el correo. Inténtalo de nuevo.', 'tuservilleta' ) ), 500 );
+		}
 
 		if ( $email ) {
 			wp_mail(
