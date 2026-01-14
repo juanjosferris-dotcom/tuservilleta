@@ -17,6 +17,10 @@
       --card: #ffffff;
       --muted: #52606d;
       --border: #f0e6df;
+      --hero-image: url("images/hero.jpg");
+      --small-image: url("images/servilleta-20.jpg");
+      --large-image: url("images/servilleta-40.jpg");
+      --detail-image: url("images/detail.jpg");
     }
     * { box-sizing: border-box; }
     body {
@@ -32,6 +36,29 @@
       color: #fff;
       padding: 48px 20px 64px;
       text-align: center;
+      position: relative;
+      overflow: hidden;
+      isolation: isolate;
+    }
+    header::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image: var(--hero-image);
+      background-size: cover;
+      background-position: center;
+      opacity: 0.28;
+      z-index: -2;
+      filter: saturate(1.1);
+    }
+    header::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 20% 20%, rgba(215,38,61,0.25), transparent 35%),
+                  radial-gradient(circle at 80% 10%, rgba(255,255,255,0.15), transparent 32%),
+                  linear-gradient(135deg, rgba(31,41,51,0.75), rgba(31,41,51,0.9));
+      z-index: -1;
     }
     header h1 {
       margin: 0 0 12px;
@@ -70,7 +97,7 @@
       border: 1px solid transparent;
       font-weight: 700;
       text-decoration: none;
-      transition: transform 150ms ease, box-shadow 150ms ease, background 150ms ease;
+      transition: transform 200ms ease, box-shadow 200ms ease, background 200ms ease, filter 200ms ease;
       cursor: pointer;
     }
     .btn.primary {
@@ -83,7 +110,7 @@
       border-color: rgba(255,255,255,0.15);
       color: #fff;
     }
-    .btn:hover { transform: translateY(-1px); }
+    .btn:hover { transform: translateY(-2px); filter: brightness(1.05); }
     .wrapper {
       max-width: 1100px;
       margin: -50px auto 60px;
@@ -96,6 +123,11 @@
       padding: 28px;
       box-shadow: 0 14px 40px rgba(31, 41, 51, 0.05);
       margin-bottom: 18px;
+      transition: transform 220ms ease, box-shadow 220ms ease;
+    }
+    .card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 16px 50px rgba(31, 41, 51, 0.08);
     }
     h3 { margin-top: 0; }
     ul { padding-left: 20px; }
@@ -162,6 +194,49 @@
       flex-wrap: wrap;
       margin-bottom: 14px;
     }
+    .media-block {
+      position: relative;
+      border-radius: 16px;
+      overflow: hidden;
+      min-height: 220px;
+      background: linear-gradient(135deg, rgba(255,247,242,0.6), rgba(215,38,61,0.06));
+      border: 1px solid var(--border);
+      box-shadow: 0 10px 40px rgba(31,41,51,0.06);
+    }
+    .media-block::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-size: cover;
+      background-position: center;
+      filter: saturate(1.05);
+      transition: transform 0.6s ease;
+    }
+    .media-block.small::before { background-image: var(--small-image); }
+    .media-block.large::before { background-image: var(--large-image); }
+    .media-block.detail::before { background-image: var(--detail-image); }
+    .media-block:hover::before { transform: scale(1.05); }
+    .media-caption {
+      position: absolute;
+      inset: auto 16px 16px 16px;
+      padding: 12px 14px;
+      border-radius: 12px;
+      background: rgba(31,41,51,0.72);
+      color: #fff;
+      font-weight: 600;
+      backdrop-filter: blur(4px);
+    }
+    .divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(215,38,61,0.35), transparent);
+      margin: 26px 0 12px;
+    }
+    .guide {
+      background: #fff;
+      border: 1px dashed #f0e6df;
+      padding: 20px;
+      border-radius: 14px;
+    }
     @media (max-width: 640px) {
       header { padding: 36px 16px 58px; }
       .wrapper { margin-top: -40px; }
@@ -183,6 +258,27 @@
   </header>
 
   <main class="wrapper">
+    <section class="card" style="background: linear-gradient(145deg, #fffdfa, #fff7f2); border-color: #ffe0e4;">
+      <div class="section-title">
+        <h3>Impacto visual rápido</h3>
+        <span class="badge">Hero + Producto</span>
+      </div>
+      <div class="grid">
+        <div>
+          <div class="media-block small">
+            <div class="media-caption">Servilleta pequeña · 20x20 cm abierta (10x10 cm plegada)</div>
+          </div>
+        </div>
+        <div>
+          <div class="media-block large">
+            <div class="media-caption">Servilleta grande · 40x40 cm abierta (20x20 cm plegada)</div>
+          </div>
+        </div>
+      </div>
+      <div class="divider"></div>
+      <p style="margin:0;color:var(--muted);font-weight:600;">Configura las imágenes subiendo tus creatividades a <code>images/</code> y actualizando las variables <code>--hero-image</code>, <code>--small-image</code>, <code>--large-image</code> y <code>--detail-image</code> en el bloque <code>:root</code>.</p>
+    </section>
+
     <section class="card">
       <div class="section-title">
         <h3>1) Contexto de la oferta</h3>
@@ -246,6 +342,9 @@
         </div>
       </div>
       <p class="highlight"><strong>Importante:</strong> impresión Deluxe a 1 Tinta incluida en ambos formatos con servilletas blancas o negras.</p>
+      <div class="media-block detail" style="margin-top:14px;">
+        <div class="media-caption">Detalle de impresión Deluxe a 1 tinta</div>
+      </div>
     </section>
 
     <section class="card">
@@ -375,6 +474,28 @@
       <div class="cta-group" style="margin-top:12px;">
         <a class="btn primary" href="https://wa.me/34650504339" target="_blank" rel="noopener">Solicitar la promoción</a>
         <a class="btn secondary" href="mailto:info@tuservilleta.com">Enviar briefing a info@tuservilleta.com</a>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="section-title">
+        <h3>Guía rápida para subir imágenes estratégicas</h3>
+        <span class="badge">Manual de uso</span>
+      </div>
+      <div class="guide">
+        <ol style="margin:0 0 12px 18px;">
+          <li>Sube tus imágenes a <code>/images/</code> (crear carpeta si no existe). Recomendado: hero 1600x900, producto pequeño 1200x1200, producto grande 1200x1200, detalle 1400x900.</li>
+          <li>Actualiza las variables del bloque <code>:root</code> en la cabecera:
+            <br><code>--hero-image: url("images/hero.jpg");</code><br>
+            <code>--small-image: url("images/servilleta-20.jpg");</code><br>
+            <code>--large-image: url("images/servilleta-40.jpg");</code><br>
+            <code>--detail-image: url("images/detail.jpg");</code>
+          </li>
+          <li>Usa PNG/JPG optimizados (ideal &lt; 400 KB cada uno). Ajusta nombres si difieren.</li>
+          <li>Si necesitas otra imagen, duplica un bloque <code>.media-block</code> y define un nuevo <code>background-image</code> inline o añade una variable.</li>
+          <li>Comprueba la previsualización en local con <code>python -m http.server 8000</code> y abre <code>http://localhost:8000</code>.</li>
+        </ol>
+        <p style="margin:0;color:var(--muted);font-weight:600;">Tip: las imágenes usan efecto hover sutil y overlay de texto para guiar al usuario sin saturar el contenido.</p>
       </div>
     </section>
   </main>
