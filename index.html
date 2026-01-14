@@ -18,7 +18,7 @@
     * { box-sizing: border-box; }
     body {
       margin: 0;
-      font-family: "Inter", system-ui, -apple-system, sans-serif;
+      font-family: system-ui, -apple-system, sans-serif;
       background: var(--bg);
       color: var(--primary);
       line-height: 1.6;
@@ -169,14 +169,14 @@
 <body>
   <header>
     <div class="tagline">Oferta especial enero–febrero 2026</div>
-    <h1>Tu servilleta, SL factura 600.000 € en 2026</h1>
+    <h1>Elige servilletas grandes o pequeñas a precio especial</h1>
     <h2>Promoción exclusiva para hostelería: servilletas personalizadas Deluxe con descuento y extras incluidos</h2>
     <div class="cta-group">
       <a class="btn primary" href="https://wa.me/34650504339" target="_blank" rel="noopener">Hablar por WhatsApp (+34 650 504 339)</a>
       <a class="btn secondary" href="mailto:info@tuservilleta.com">Solicitar info en info@tuservilleta.com</a>
       <a class="btn secondary" href="tel:+34650504339">Llamar ahora</a>
     </div>
-    <p style="margin-top:18px;color:#cbd5e1;font-weight:600;">Oferta válida hasta el 28 de febrero de 2026 · Precios sin IVA</p>
+    <p style="margin-top:18px;color:#cbd5e1;font-weight:600;">Oferta válida hasta el <span class="deadline"></span> · Precios sin IVA</p>
   </header>
 
   <main class="wrapper">
@@ -191,27 +191,28 @@
         <li><strong>Planificar su consumo anual</strong> con precios cerrados y condiciones claras.</li>
         <li><strong>Optimizar márgenes</strong> gracias a un descuento aplicado sobre nuestras tarifas habituales.</li>
       </ul>
-      <p>Buscamos ayudarte a crecer y, al mismo tiempo, que <strong>Tu servilleta, SL facture 600.000 € en 2026</strong> gracias a clientes fieles y satisfechos.</p>
+      <p>Buscamos ayudarte a crecer con servilletas personalizadas que refuercen tu marca y te permitan planificar consumos con condiciones claras.</p>
     </section>
 
     <section class="card">
       <div class="section-title">
-        <h3>2) Oferta económica y objetivo</h3>
-        <span class="badge">Objetivo 600.000 €</span>
+        <h3>2) Oferta económica y elección de tamaños</h3>
+        <span class="badge">Precio especial hostelería</span>
       </div>
       <div class="grid">
         <div>
-          <h4>Hipótesis de trabajo</h4>
+          <h4>Cómo funciona la promoción</h4>
           <ul>
-            <li>Media de <strong>5 pedidos diarios</strong>.</li>
-            <li><strong>Importe medio por pedido: 500 € + IVA.</strong></li>
-            <li><strong>Descuento aplicado: 20%</strong> sobre tarifa base.</li>
+            <li><strong>Elige formato principal</strong>: servilletas pequeñas 20x20 cm (10x10 cm plegadas) o servilletas grandes 40x40 cm (20x20 cm plegadas).</li>
+            <li><strong>Importe medio de referencia: 500 € + IVA</strong> sobre tarifa base antes del 20% de descuento.</li>
+            <li><strong>Descuento aplicado: 20%</strong> en esta campaña de hostelería.</li>
           </ul>
         </div>
         <div class="highlight">
-          <strong>Referencia interna:</strong> no es compromiso contractual, es el marco para dimensionar la promoción y asegurar precios competitivos y sostenibles.
+          <strong>Referencia interna:</strong> precios sin IVA; elige tamaño pequeño o grande según tus necesidades y mantén un coste cerrado con el 20% aplicado.
         </div>
       </div>
+      <p style="margin-top:8px;color:var(--muted);font-weight:600;">Hipótesis calculadas sobre días naturales; ticket medio referido a la tarifa base antes de aplicar el 20% de descuento.</p>
     </section>
 
     <section class="card">
@@ -233,7 +234,7 @@
         <div>
           <h4>2.000 servilletas 40x40 cm</h4>
           <ul>
-            <li>Formato: <strong>40x40 cm (plegadas en formato servicio)</strong></li>
+            <li>Formato: <strong>40x40 cm abiertas (20x20 cm plegadas en cruz)</strong></li>
             <li>Colores: <strong>Blanca o Negra</strong></li>
             <li>Personalización: <strong>Impresión Deluxe a 1 Tinta</strong></li>
             <li>Tipo: <strong>servilletas personalizadas</strong></li>
@@ -297,8 +298,8 @@
         <h3>7) Validez temporal</h3>
         <span class="badge">Hasta 28/02/2026</span>
       </div>
-      <p><strong>Promoción válida hasta el 28 de febrero de 2026.</strong> Pedidos posteriores no se acogen salvo prórroga expresa. Aplica la fecha de confirmación del pedido.</p>
-      <p class="highlight">Oferta válida hasta el 28 de febrero de 2026.</p>
+      <p><strong>Promoción válida hasta el <span class="deadline"></span>.</strong> Pedidos posteriores no se acogen salvo prórroga expresa. Aplica la fecha de confirmación del pedido.</p>
+      <p class="highlight">Recuerda: la confirmación del pedido debe llegar antes del <span class="deadline"></span> para aplicar la promoción.</p>
     </section>
 
     <section class="card">
@@ -350,7 +351,7 @@
         <li>“Mejora la imagen de tu negocio con servilletas personalizadas profesionales.”</li>
         <li>“Incluimos envío, cliché y 100 posavasos de regalo para que solo te preocupes de atender a tus clientes.”</li>
         <li>“Elige entre calidades 2 Capas y Doble Punto, según el nivel de acabado que quieras ofrecer.”</li>
-        <li>“Promoción disponible solo hasta el 28 de febrero de 2026.”</li>
+        <li>“Promoción disponible solo hasta el <span class="deadline"></span>.”</li>
         <li>“Aprovecha ahora el descuento aplicado sobre tarifa y planifica tus consumos del año.”</li>
       </ul>
     </section>
@@ -358,7 +359,7 @@
     <section class="card summary-block">
       <h3 style="margin-top:0;">11) Resumen destacado de la oferta</h3>
       <p><strong>Oferta especial Tu servilleta, SL – Enero/Febrero 2026</strong></p>
-      <p>Tu servilleta, SL lanza una promoción exclusiva para negocios de hostelería con el objetivo de alcanzar una facturación de <strong>600.000 € en 2026</strong>, basada en una media de <strong>5 pedidos diarios de 500 € + IVA</strong> (con un <strong>20% de descuento</strong> aplicado).</p>
+      <p>Tu servilleta, SL lanza una promoción exclusiva para negocios de hostelería: elige servilletas personalizadas <strong>pequeñas (20x20 cm abiertas, 10x10 cm plegadas)</strong> o <strong>grandes (40x40 cm abiertas, 20x20 cm plegadas)</strong> con descuento especial.</p>
       <p>Con esta oferta obtendrás:</p>
       <ul>
         <li><strong>3.000 servilletas 20x20 cm (10x10 plegadas) Blancas o Negras, personalizadas con impresión Deluxe a 1 Tinta.</strong></li>
@@ -367,7 +368,7 @@
         <li><strong>Gastos de envío incluidos</strong>, <strong>cliché incluido</strong> y <strong>100 posavasos gratis</strong>.</li>
       </ul>
       <p><strong>Precios sin IVA.</strong> A todos los importes se les aplicará el IVA vigente.</p>
-      <p><strong>Promoción válida hasta el 28 de febrero de 2026.</strong></p>
+      <p><strong>Promoción válida hasta el <span class="deadline"></span>.</strong></p>
       <div class="cta-group" style="margin-top:12px;">
         <a class="btn primary" href="https://wa.me/34650504339" target="_blank" rel="noopener">Solicitar la promoción</a>
         <a class="btn secondary" href="mailto:info@tuservilleta.com">Enviar briefing a info@tuservilleta.com</a>
@@ -382,8 +383,16 @@
       <li class="pill">Cliché incluido</li>
       <li class="pill">100 posavasos gratis</li>
       <li class="pill">Precios sin IVA</li>
-      <li class="pill">Oferta válida hasta 28/02/2026</li>
+      <li class="pill">Oferta válida hasta <span class="deadline-short"></span></li>
     </ul>
   </footer>
+  <script>
+    const DEADLINE_ISO = "2026-02-28T12:00:00Z";
+    const deadlineDate = new Date(DEADLINE_ISO);
+    const DEADLINE_TEXT = deadlineDate.toLocaleDateString("es-ES", { day: "numeric", month: "long", year: "numeric" });
+    const DEADLINE_SHORT = deadlineDate.toLocaleDateString("es-ES");
+    document.querySelectorAll(".deadline").forEach(el => { el.textContent = DEADLINE_TEXT; });
+    document.querySelectorAll(".deadline-short").forEach(el => { el.textContent = DEADLINE_SHORT; });
+  </script>
 </body>
 </html>
