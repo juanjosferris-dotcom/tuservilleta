@@ -1,0 +1,522 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tu servilleta, SL | Oferta Especial 2026</title>
+  <meta name="description" content="Promoción exclusiva de Tu servilleta, SL para hostelería: servilletas personalizadas Deluxe con envío, cliché y 100 posavasos incluidos. Oferta válida hasta el 28 de febrero de 2026.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      color-scheme: light;
+      --primary: #1f2933;
+      --accent: #d7263d;
+      --bg: #fff7f2;
+      --card: #ffffff;
+      --muted: #52606d;
+      --border: #f0e6df;
+      --hero-image: url("images/hero.jpg");
+      --small-image: url("images/servilleta-20.jpg");
+      --large-image: url("images/servilleta-40.jpg");
+      --detail-image: url("images/detail.jpg");
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Montserrat", system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--primary);
+      line-height: 1.6;
+    }
+    a { color: var(--accent); }
+    header {
+      background: linear-gradient(135deg, #1f2933, #2d3743);
+      color: #fff;
+      padding: 48px 20px 64px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+      isolation: isolate;
+    }
+    header::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image: var(--hero-image);
+      background-size: cover;
+      background-position: center;
+      opacity: 0.28;
+      z-index: -2;
+      filter: saturate(1.1);
+    }
+    header::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 20% 20%, rgba(215,38,61,0.25), transparent 35%),
+                  radial-gradient(circle at 80% 10%, rgba(255,255,255,0.15), transparent 32%),
+                  linear-gradient(135deg, rgba(31,41,51,0.75), rgba(31,41,51,0.9));
+      z-index: -1;
+    }
+    header h1 {
+      margin: 0 0 12px;
+      font-size: clamp(28px, 5vw, 42px);
+    }
+    header h2 {
+      margin: 0 0 24px;
+      font-weight: 500;
+      color: #e2e8f0;
+    }
+    .tagline {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 16px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 999px;
+      font-weight: 600;
+      color: #f8fafc;
+    }
+    .cta-group {
+      margin-top: 26px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      justify-content: center;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 14px 18px;
+      border-radius: 14px;
+      border: 1px solid transparent;
+      font-weight: 700;
+      text-decoration: none;
+      transition: transform 200ms ease, box-shadow 200ms ease, background 200ms ease, filter 200ms ease;
+      cursor: pointer;
+    }
+    .btn.primary {
+      background: var(--accent);
+      color: #fff;
+      box-shadow: 0 15px 30px rgba(215, 38, 61, 0.25);
+    }
+    .btn.secondary {
+      background: rgba(255,255,255,0.08);
+      border-color: rgba(255,255,255,0.15);
+      color: #fff;
+    }
+    .btn:hover { transform: translateY(-2px); filter: brightness(1.05); }
+    .wrapper {
+      max-width: 1100px;
+      margin: -50px auto 60px;
+      padding: 0 20px;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 28px;
+      box-shadow: 0 14px 40px rgba(31, 41, 51, 0.05);
+      margin-bottom: 18px;
+      transition: transform 220ms ease, box-shadow 220ms ease;
+    }
+    .card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 16px 50px rgba(31, 41, 51, 0.08);
+    }
+    h3 { margin-top: 0; }
+    ul { padding-left: 20px; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 14px;
+    }
+    .pill {
+      display: inline-block;
+      padding: 6px 10px;
+      border-radius: 10px;
+      background: #fff7ed;
+      color: #9a3412;
+      font-weight: 700;
+      font-size: 12px;
+      border: 1px solid #fed7aa;
+    }
+    .highlight {
+      background: #fff1f2;
+      border: 1px solid #ffe0e4;
+      color: #1f2933;
+      padding: 14px;
+      border-radius: 12px;
+      margin: 12px 0;
+    }
+    .footer {
+      text-align: center;
+      color: var(--muted);
+      padding: 32px 20px 50px;
+      font-size: 14px;
+    }
+    .list-inline {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      padding: 0;
+      margin: 0;
+      list-style: none;
+    }
+    .summary-block {
+      background: #1f2933;
+      color: #f8fafc;
+      border-radius: 16px;
+      padding: 24px;
+      border: 1px solid #2d3743;
+    }
+    .summary-block strong { color: #fff; }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #f1f5f9;
+      padding: 8px 12px;
+      border-radius: 10px;
+      font-weight: 600;
+      color: var(--primary);
+      border: 1px solid #e2e8f0;
+    }
+    .section-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+    .media-block {
+      position: relative;
+      border-radius: 16px;
+      overflow: hidden;
+      min-height: 220px;
+      background: linear-gradient(135deg, rgba(255,247,242,0.6), rgba(215,38,61,0.06));
+      border: 1px solid var(--border);
+      box-shadow: 0 10px 40px rgba(31,41,51,0.06);
+    }
+    .media-block::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-size: cover;
+      background-position: center;
+      filter: saturate(1.05);
+      transition: transform 0.6s ease;
+    }
+    .media-block.small::before { background-image: var(--small-image); }
+    .media-block.large::before { background-image: var(--large-image); }
+    .media-block.detail::before { background-image: var(--detail-image); }
+    .media-block:hover::before { transform: scale(1.05); }
+    .media-caption {
+      position: absolute;
+      inset: auto 16px 16px 16px;
+      padding: 12px 14px;
+      border-radius: 12px;
+      background: rgba(31,41,51,0.72);
+      color: #fff;
+      font-weight: 600;
+      backdrop-filter: blur(4px);
+    }
+    .divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(215,38,61,0.35), transparent);
+      margin: 26px 0 12px;
+    }
+    .guide {
+      background: #fff;
+      border: 1px dashed #f0e6df;
+      padding: 20px;
+      border-radius: 14px;
+    }
+    @media (max-width: 640px) {
+      header { padding: 36px 16px 58px; }
+      .wrapper { margin-top: -40px; }
+      .card { padding: 22px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="tagline">Oferta especial enero–febrero 2026</div>
+    <h1>Elige servilletas grandes o pequeñas a precio especial</h1>
+    <h2>Promoción exclusiva para hostelería: servilletas personalizadas Deluxe con descuento y extras incluidos</h2>
+    <div class="cta-group">
+      <a class="btn primary" href="https://wa.me/34650504339" target="_blank" rel="noopener">Hablar por WhatsApp (+34 650 504 339)</a>
+      <a class="btn secondary" href="mailto:info@tuservilleta.com">Solicitar info en info@tuservilleta.com</a>
+      <a class="btn secondary" href="tel:+34650504339">Llamar ahora</a>
+    </div>
+    <p style="margin-top:18px;color:#cbd5e1;font-weight:600;">Oferta válida hasta el <span class="deadline"></span> · Precios sin IVA</p>
+  </header>
+
+  <main class="wrapper">
+    <section class="card" style="background: linear-gradient(145deg, #fffdfa, #fff7f2); border-color: #ffe0e4;">
+      <div class="section-title">
+        <h3>Impacto visual rápido</h3>
+        <span class="badge">Hero + Producto</span>
+      </div>
+      <div class="grid">
+        <div>
+          <div class="media-block small">
+            <div class="media-caption">Servilleta pequeña · 20x20 cm abierta (10x10 cm plegada)</div>
+          </div>
+        </div>
+        <div>
+          <div class="media-block large">
+            <div class="media-caption">Servilleta grande · 40x40 cm abierta (20x20 cm plegada)</div>
+          </div>
+        </div>
+      </div>
+      <div class="divider"></div>
+      <p style="margin:0;color:var(--muted);font-weight:600;">Configura las imágenes subiendo tus creatividades a <code>images/</code> y actualizando las variables <code>--hero-image</code>, <code>--small-image</code>, <code>--large-image</code> y <code>--detail-image</code> en el bloque <code>:root</code>.</p>
+    </section>
+
+    <section class="card">
+      <div class="section-title">
+        <h3>1) Contexto de la oferta</h3>
+        <span class="badge">Hostelería</span>
+      </div>
+      <p>En <strong>Tu servilleta, SL</strong> lanzamos una promoción especial de inicio de año para bares, restaurantes, cafeterías, caterings, hoteles y eventos que quieren:</p>
+      <ul>
+        <li><strong>Mejorar su imagen de marca</strong> con servilletas personalizadas de calidad.</li>
+        <li><strong>Planificar su consumo anual</strong> con precios cerrados y condiciones claras.</li>
+        <li><strong>Optimizar márgenes</strong> gracias a un descuento aplicado sobre nuestras tarifas habituales.</li>
+      </ul>
+      <p>Buscamos ayudarte a crecer con servilletas personalizadas que refuercen tu marca y te permitan planificar consumos con condiciones claras.</p>
+    </section>
+
+    <section class="card">
+      <div class="section-title">
+        <h3>2) Oferta económica y elección de tamaños</h3>
+        <span class="badge">Precio especial hostelería</span>
+      </div>
+      <div class="grid">
+        <div>
+          <h4>Cómo funciona la promoción</h4>
+          <ul>
+            <li><strong>Elige formato principal</strong>: servilletas pequeñas 20x20 cm (10x10 cm plegadas) o servilletas grandes 40x40 cm (20x20 cm plegadas).</li>
+            <li><strong>Importe medio de referencia: 500 € + IVA</strong> sobre tarifa base antes del 20% de descuento.</li>
+            <li><strong>Descuento aplicado: 20%</strong> en esta campaña de hostelería.</li>
+          </ul>
+        </div>
+        <div class="highlight">
+          <strong>Referencia interna:</strong> precios sin IVA; elige tamaño pequeño o grande según tus necesidades y mantén un coste cerrado con el 20% aplicado.
+        </div>
+      </div>
+      <p style="margin-top:8px;color:var(--muted);font-weight:600;">Cálculos basados en días naturales; ticket medio referido a la tarifa base antes de aplicar el 20% de descuento.</p>
+    </section>
+
+    <section class="card">
+      <div class="section-title">
+        <h3>3) Pack promocional principal</h3>
+        <span class="badge">Incluye impresión Deluxe 1 Tinta</span>
+      </div>
+      <div class="grid">
+        <div>
+          <h4>3.000 servilletas 20x20 cm</h4>
+          <ul>
+            <li>Formato: <strong>20x20 cm (10x10 cm plegadas)</strong></li>
+            <li>Colores: <strong>Blanca o Negra</strong></li>
+            <li>Personalización: <strong>Impresión Deluxe a 1 Tinta</strong></li>
+            <li>Tipo: <strong>servilletas personalizadas</strong></li>
+            <li>Cantidad: <strong>3.000 unidades</strong></li>
+          </ul>
+        </div>
+        <div>
+          <h4>2.000 servilletas 40x40 cm</h4>
+          <ul>
+            <li>Formato: <strong>40x40 cm abiertas (20x20 cm plegadas en cruz)</strong></li>
+            <li>Colores: <strong>Blanca o Negra</strong></li>
+            <li>Personalización: <strong>Impresión Deluxe a 1 Tinta</strong></li>
+            <li>Tipo: <strong>servilletas personalizadas</strong></li>
+            <li>Cantidad: <strong>2.000 unidades</strong></li>
+          </ul>
+        </div>
+      </div>
+      <p class="highlight"><strong>Importante:</strong> impresión Deluxe a 1 Tinta incluida en ambos formatos con servilletas blancas o negras.</p>
+      <div class="media-block detail" style="margin-top:14px;">
+        <div class="media-caption">Detalle de impresión Deluxe a 1 tinta</div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="section-title">
+        <h3>4) Calidades disponibles y excluidas</h3>
+        <span class="badge">2 Capas | Doble Punto</span>
+      </div>
+      <div class="grid">
+        <div>
+          <h4>Calidades incluidas</h4>
+          <ul>
+            <li><strong>2 Capas</strong>: doble capa, buena absorción y tacto correcto para usos diarios.</li>
+            <li><strong>Doble Punto</strong>: textura esponjosa y de mayor calidad percibida.</li>
+          </ul>
+        </div>
+        <div>
+          <h4>Calidades excluidas</h4>
+          <ul>
+            <li><strong>3 Capas</strong></li>
+            <li><strong>Tisú Seco / Airlaid</strong></li>
+          </ul>
+          <p style="margin-top:8px;">Si necesitas estas calidades, se presupuestan aparte y no aplican condiciones de la promoción.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="section-title">
+        <h3>5) Extras incluidos sin coste</h3>
+        <span class="badge">Valor añadido</span>
+      </div>
+      <ul>
+        <li><strong>Gastos de envío incluidos</strong> dentro del ámbito promocional acordado.</li>
+        <li><strong>Cliché incluido</strong> para diseños estándar a 1 tinta con arte final adecuado.</li>
+        <li><strong>100 posavasos gratis</strong> coordinados con el diseño de servilletas.</li>
+      </ul>
+    </section>
+
+    <section class="card">
+      <div class="section-title">
+        <h3>6) Condiciones económicas</h3>
+        <span class="badge">Precios sin IVA</span>
+      </div>
+      <ul>
+        <li>Descuento del <strong>20%</strong> aplicado sobre tarifa estándar.</li>
+        <li><strong>No incluye IVA.</strong> Se aplicará el tipo vigente al facturar.</li>
+        <li>Promoción orientada a <strong>negocios de hostelería y restauración</strong>.</li>
+      </ul>
+    </section>
+
+    <section class="card">
+      <div class="section-title">
+        <h3>7) Validez temporal</h3>
+        <span class="badge">Hasta 28/02/2026</span>
+      </div>
+      <p><strong>Promoción válida hasta el <span class="deadline"></span>.</strong> Pedidos posteriores no se acogen salvo prórroga expresa. Aplica la fecha de confirmación del pedido.</p>
+      <p class="highlight">Recuerda: la confirmación del pedido debe llegar antes del <span class="deadline"></span> para aplicar la promoción.</p>
+    </section>
+
+    <section class="card">
+      <div class="section-title">
+        <h3>8) Personalización y proceso de pedido</h3>
+        <span class="badge">Paso a paso</span>
+      </div>
+      <div class="grid">
+        <div>
+          <h4>Diseño</h4>
+          <ul>
+            <li>Personalización <strong>Deluxe a 1 Tinta</strong>.</li>
+            <li>Servilletas <strong>Blancas o Negras</strong>.</li>
+            <li>Cliente facilita logo/arte final y color de tinta.</li>
+          </ul>
+        </div>
+        <div>
+          <h4>Proceso recomendado</h4>
+          <ol>
+            <li><strong>Solicitud</strong>: datos de negocio, envío, formatos, calidades, color y logo.</li>
+            <li><strong>Revisión técnica</strong>: prueba digital para validar.</li>
+            <li><strong>Confirmación</strong>: aprobación y precio definitivo (sin IVA, con IVA desglosado).</li>
+            <li><strong>Producción</strong>: fabricación de servilletas y 100 posavasos gratis.</li>
+            <li><strong>Envío</strong>: entrega con gastos incluidos según la oferta.</li>
+          </ol>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="section-title">
+        <h3>9) Exclusiones y aclaraciones</h3>
+        <span class="badge">Transparencia</span>
+      </div>
+      <ul>
+        <li>Calidades excluidas: <strong>3 Capas</strong> y <strong>Tisú Seco / Airlaid</strong>.</li>
+        <li>No incluye otros formatos, colores o impresiones fuera de lo indicado.</li>
+        <li>No incluye cambios de diseño tras aprobar la prueba digital si implican rehacer clichés complejos.</li>
+        <li>Promoción sujeta a disponibilidad y condiciones generales de venta de Tu servilleta, SL.</li>
+      </ul>
+    </section>
+
+    <section class="card">
+      <div class="section-title">
+        <h3>10) Argumentos comerciales</h3>
+        <span class="badge">Conversión</span>
+      </div>
+      <ul>
+        <li>“Mejora la imagen de tu negocio con servilletas personalizadas profesionales.”</li>
+        <li>“Incluimos envío, cliché y 100 posavasos de regalo para que solo te preocupes de atender a tus clientes.”</li>
+        <li>“Elige entre calidades 2 Capas y Doble Punto, según el nivel de acabado que quieras ofrecer.”</li>
+        <li>“Promoción disponible solo hasta el <span class="deadline"></span>.”</li>
+        <li>“Aprovecha ahora el descuento aplicado sobre tarifa y planifica tus consumos del año.”</li>
+      </ul>
+    </section>
+
+    <section class="card summary-block">
+      <h3 style="margin-top:0;">11) Resumen destacado de la oferta</h3>
+      <p><strong>Oferta especial Tu servilleta, SL – Enero/Febrero 2026</strong></p>
+      <p>Tu servilleta, SL lanza una promoción exclusiva para negocios de hostelería: elige servilletas personalizadas <strong>pequeñas (20x20 cm abiertas, 10x10 cm plegadas)</strong> o <strong>grandes (40x40 cm abiertas, 20x20 cm plegadas)</strong> con descuento especial.</p>
+      <p>Con esta oferta obtendrás:</p>
+      <ul>
+        <li><strong>3.000 servilletas 20x20 cm (10x10 plegadas) Blancas o Negras, personalizadas con impresión Deluxe a 1 Tinta.</strong></li>
+        <li><strong>2.000 servilletas 40x40 cm Blancas o Negras, personalizadas con impresión Deluxe a 1 Tinta.</strong></li>
+        <li><strong>Calidades a elegir entre 2 Capas y Doble Punto</strong> (quedan excluidas 3 Capas y Tisú Seco/Airlaid).</li>
+        <li><strong>Gastos de envío incluidos</strong>, <strong>cliché incluido</strong> y <strong>100 posavasos gratis</strong>.</li>
+      </ul>
+      <p><strong>Precios sin IVA.</strong> A todos los importes se les aplicará el IVA vigente.</p>
+      <p><strong>Promoción válida hasta el <span class="deadline"></span>.</strong></p>
+      <div class="cta-group" style="margin-top:12px;">
+        <a class="btn primary" href="https://wa.me/34650504339" target="_blank" rel="noopener">Solicitar la promoción</a>
+        <a class="btn secondary" href="mailto:info@tuservilleta.com">Enviar briefing a info@tuservilleta.com</a>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="section-title">
+        <h3>Guía rápida para subir imágenes estratégicas</h3>
+        <span class="badge">Manual de uso</span>
+      </div>
+      <div class="guide">
+        <ol style="margin:0 0 12px 18px;">
+          <li>Sube tus imágenes a <code>/images/</code> (crear carpeta si no existe). Recomendado: hero 1600x900, producto pequeño 1200x1200, producto grande 1200x1200, detalle 1400x900.</li>
+          <li>Actualiza las variables del bloque <code>:root</code> en la cabecera:
+            <br><code>--hero-image: url("images/hero.jpg");</code><br>
+            <code>--small-image: url("images/servilleta-20.jpg");</code><br>
+            <code>--large-image: url("images/servilleta-40.jpg");</code><br>
+            <code>--detail-image: url("images/detail.jpg");</code>
+          </li>
+          <li>Usa PNG/JPG optimizados (ideal &lt; 400 KB cada uno). Ajusta nombres si difieren.</li>
+          <li>Si necesitas otra imagen, duplica un bloque <code>.media-block</code> y define un nuevo <code>background-image</code> inline o añade una variable.</li>
+          <li>Comprueba la previsualización en local con <code>python -m http.server 8000</code> y abre <code>http://localhost:8000</code>.</li>
+        </ol>
+        <p style="margin:0;color:var(--muted);font-weight:600;">Tip: las imágenes usan efecto hover sutil y overlay de texto para guiar al usuario sin saturar el contenido.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p><strong>Tu servilleta, SL</strong> · Marca: tuservilleta.com · Contacto: <a href="mailto:info@tuservilleta.com">info@tuservilleta.com</a> · Tel/WhatsApp: <a href="tel:+34650504339">+34 650 504 339</a></p>
+    <ul class="list-inline">
+      <li class="pill">Envío incluido</li>
+      <li class="pill">Cliché incluido</li>
+      <li class="pill">100 posavasos gratis</li>
+      <li class="pill">Precios sin IVA</li>
+      <li class="pill">Oferta válida hasta <span class="deadline-short"></span></li>
+    </ul>
+  </footer>
+  <script>
+    const DEADLINE_ISO = "2026-02-28T12:00:00Z";
+    const deadlineDate = new Date(DEADLINE_ISO);
+    const DEADLINE_TEXT = deadlineDate.toLocaleDateString("es-ES", { day: "numeric", month: "long", year: "numeric" });
+    const DEADLINE_SHORT = deadlineDate.toLocaleDateString("es-ES");
+    document.querySelectorAll(".deadline").forEach(el => { el.textContent = DEADLINE_TEXT; });
+    document.querySelectorAll(".deadline-short").forEach(el => { el.textContent = DEADLINE_SHORT; });
+  </script>
+</body>
+</html>
